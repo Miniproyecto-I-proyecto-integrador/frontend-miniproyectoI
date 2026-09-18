@@ -267,15 +267,13 @@ const btnPrimary = { background: THEME.accent, color: '#fff', border: 'none', bo
 const btnGhost = { background: 'transparent', color: THEME.textPrimary, border: `1px solid ${THEME.border}`, borderRadius: '8px', padding: '10px 18px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' };
 
 /* ============================================================
-   VISTA: HOY
+   VISTA: HOY (Sin el botón duplicado ni el modal)
    ============================================================ */
 function Hoy({ store }) {
   const { events, tasks, toggleTask, deleteTask } = store;
   const [filterEvent, setFilterEvent] = useState('all');
   const [filterStatus, setFilterStatus] = useState('pendientes');
   const [menuOpenId, setMenuOpenId] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   const filtered = tasks.filter((t) => filterEvent === 'all' || t.eventId === filterEvent);
   const pending = filtered.filter((t) => !t.completed);
@@ -300,9 +298,6 @@ function Hoy({ store }) {
     <div style={{ padding: '32px 40px', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <h1 style={{ fontSize: '32px', margin: 0, fontWeight: 700 }}>Hoy - Panel de prioridades</h1>
-        <button onClick={() => setModalOpen(true)} style={{ ...btnPrimary, borderRadius: '24px', padding: '12px 20px', display: 'flex', gap: '8px' }}>
-          <Plus size={18} /> Nueva tarea
-        </button>
       </div>
 
       <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
@@ -353,12 +348,9 @@ function Hoy({ store }) {
         )}
       </div>
 
-      {/* Footer dinámico requerido */}
       <div style={{ marginTop: '40px', backgroundColor: '#F3F4F6', border: `1px solid ${THEME.border}`, padding: '16px', borderRadius: '12px', textAlign: 'center', fontSize: '15px' }}>
         {pending.length} tareas pendientes - {hoy.length} para hoy
       </div>
-
-      {modalOpen && <ModalNuevaTarea events={events} onClose={() => setModalOpen(false)} onCreate={(task) => { store.addTask(task); setModalOpen(false); }} onGoToCrearEvento={() => { setModalOpen(false); navigate('/crear'); }} />}
     </div>
   );
 }
@@ -366,64 +358,85 @@ function Hoy({ store }) {
 const selectStyle = { padding: '10px 16px', borderRadius: '24px', border: `1px solid ${THEME.border}`, backgroundColor: THEME.bgElevated, fontSize: '14px', outline: 'none' };
 
 /* ============================================================
-   VISTA: EVENTOS / PROGRESO (Simplificadas para el ancho completo)
+   VISTA: EVENTOS / PROGRESO
    ============================================================ */
 function CrearEvento({ store }) {
-  // Lógica mantenida, estilos adaptados al layout full width
-  return <div style={{ padding: '32px 40px' }}><h1 style={{ fontSize: '32px', margin: '0 0 24px' }}>Eventos</h1><p>Pantalla de gestión de eventos (funcionalidad base heredada).</p></div>;
+  return <div style={{ padding: '32px 40px' }}><h1 style={{ fontSize: '32px', margin: '0 0 24px' }}>Eventos</h1><p>Pantalla de gestión de eventos.</p></div>;
 }
 function Progreso({ store }) {
   return <div style={{ padding: '32px 40px' }}><h1 style={{ fontSize: '32px', margin: '0 0 24px' }}>Progreso</h1><p>Vista general heredada.</p></div>;
 }
 
 /* ============================================================
-   APP PRINCIPAL
+   APP PRINCIPAL (Con el layout y el modal global)
    ============================================================ */
-export default function App() {
+function AppContent() {
   const store = useLogistiqStore();
+  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', backgroundColor: THEME.bg, fontFamily: FONT_BODY }}>
+      
+      <aside className="sidebar" style={{ width: '260px', flexShrink: 0, backgroundColor: THEME.sidebarBg, borderRight: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', padding: '24px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '32px' }}>
+          <div style={{ width: '32px', height: '32px', backgroundColor: THEME.accent, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <CheckCircle2 size={20} />
+          </div>
+          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Logistiq</div>
+        </div>
+
+        {/* Aquí está el botón izquierdo conectado al Modal */}
+        <button 
+          onClick={() => setModalOpen(true)}
+          style={{ backgroundColor: THEME.accent, color: '#fff', border: 'none', padding: '12px', borderRadius: '24px', fontWeight: 600, fontSize: '15px', cursor: 'pointer', marginBottom: '32px', width: '100%' }}
+        >
+          + Nueva tarea
+        </button>
+
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+          <NavItem to="/hoy" icon={LayoutDashboard}>Hoy</NavItem>
+          <NavItem to="/crear" icon={CalendarPlus}>Eventos</NavItem>
+          <NavItem to="/progreso" icon={BarChart2}>Progreso</NavItem>
+        </nav>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer', marginTop: '16px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <User size={16} />
+          </div>
+          <span style={{ fontSize: '15px', fontWeight: 500 }}>persona</span>
+        </div>
+      </aside>
+
+      <main style={{ flex: 1, height: '100vh', overflowY: 'auto' }}>
+        <Routes>
+          <Route path="/" element={<Hoy store={store} />} />
+          <Route path="/hoy" element={<Hoy store={store} />} />
+          <Route path="/crear" element={<CrearEvento store={store} />} />
+          <Route path="/evento/:id" element={<div style={{ padding: 40 }}><h1>Detalle del Evento</h1><Link to="/hoy">← Volver a Hoy</Link></div>} />
+          <Route path="/progreso" element={<Progreso store={store} />} />
+          <Route path="/configuracion" element={<div style={{ padding: 40 }}><h1>Configuración de Horas</h1><Link to="/hoy">← Volver a Hoy</Link></div>} />
+          <Route path="/login" element={<div style={{ padding: 40 }}><h1>Iniciar Sesión</h1></div>} />
+        </Routes>
+      </main>
+
+      {/* El Modal ahora es global y cubre toda la pantalla */}
+      {modalOpen && (
+        <ModalNuevaTarea 
+          events={store.events} 
+          onClose={() => setModalOpen(false)} 
+          onCreate={(task) => { store.addTask(task); setModalOpen(false); }} 
+          onGoToCrearEvento={() => { setModalOpen(false); navigate('/crear'); }} 
+        />
+      )}
+    </div>
+  );
+}
+
+export default function App() {
+  return (
     <BrowserRouter>
-      <div style={{ display: 'flex', minHeight: '100vh', width: '100%', backgroundColor: THEME.bg, fontFamily: FONT_BODY }}>
-        
-        {/* Sidebar adaptado al Figma */}
-        <aside className="sidebar" style={{ width: '260px', flexShrink: 0, backgroundColor: THEME.sidebarBg, borderRight: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', padding: '24px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '32px' }}>
-            <div style={{ width: '32px', height: '32px', backgroundColor: THEME.accent, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              <CheckCircle2 size={20} />
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Logistiq</div>
-          </div>
-
-          <button style={{ backgroundColor: THEME.accent, color: '#fff', border: 'none', padding: '12px', borderRadius: '24px', fontWeight: 600, fontSize: '15px', cursor: 'pointer', marginBottom: '32px', width: '100%' }}>
-            + Nueva tarea
-          </button>
-
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-            <NavItem to="/hoy" icon={LayoutDashboard}>Hoy</NavItem>
-            <NavItem to="/crear" icon={CalendarPlus}>Eventos</NavItem>
-            <NavItem to="/progreso" icon={BarChart2}>Progreso</NavItem>
-          </nav>
-
-          {/* Perfil sin suscripción */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer', marginTop: '16px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={16} />
-            </div>
-            <span style={{ fontSize: '15px', fontWeight: 500 }}>persona</span>
-          </div>
-        </aside>
-
-        {/* Contenido principal */}
-        <main style={{ flex: 1, height: '100vh', overflowY: 'auto' }}>
-          <Routes>
-            <Route path="/" element={<Hoy store={store} />} />
-            <Route path="/hoy" element={<Hoy store={store} />} />
-            <Route path="/crear" element={<CrearEvento store={store} />} />
-            <Route path="/progreso" element={<Progreso store={store} />} />
-          </Routes>
-        </main>
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 }
