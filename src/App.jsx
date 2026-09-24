@@ -54,7 +54,7 @@ const addDaysISO = (n) => {
 };
 
 function seedData() {
-  const events = [
+  const events = [ 
     { id: uid(), name: 'Boda de Ana y Carlos', type: 'Boda', date: addDaysISO(30), location: 'Hacienda El Paraíso' },
     { id: uid(), name: 'Cumpleaños 50', type: 'Cumpleaños', date: addDaysISO(2), location: 'Club Campestre' },
     { id: uid(), name: 'Feria Empresarial', type: 'Corporativo', date: addDaysISO(14), location: 'Centro de Eventos' },
@@ -241,7 +241,7 @@ function ModalNuevaTarea({ events, onClose, onCreate, onGoToCrearEvento }) {
   return (
     <div style={overlayStyle} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={modalStyle}>
-        <h2 style={{ margin: '0 0 8px', fontSize: '20px' }}>Nueva tarea</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: '20px' }}>Nuevo evento</h2>
         <form onSubmit={(e) => { e.preventDefault(); onCreate({ name: name.trim(), eventId, hours: parseFloat(hours), due }); }}>
           <div style={{ marginBottom: '16px' }}><input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Confirmar catering" required /></div>
           <div style={{ marginBottom: '16px' }}>
