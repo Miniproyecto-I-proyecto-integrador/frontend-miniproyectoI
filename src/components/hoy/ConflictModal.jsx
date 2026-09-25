@@ -1,0 +1,1 @@
+export default function ConflictModal({ hours, onClose }) { return <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true"><h2>Hay una sobrecarga para hoy</h2><p>Tienes {hours} horas de gestión planificadas. El límite recomendado es de 6 horas.</p><button className="button button-primary" onClick={onClose}>Entendido</button></section></div> }
