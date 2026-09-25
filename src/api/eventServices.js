@@ -1,6 +1,9 @@
 import { mockEvents } from './mockData'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  'https://backend-miniproyectoi.onrender.com/api'
+).replace(/\/+$/, '')
 // Los mocks son opt-in; producción debe consumir la API aunque la variable no exista.
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
@@ -37,7 +40,7 @@ export const eventServices = {
   },
   async updateEvent(id, payload) {
     if (USE_MOCKS) { mockStore = mockStore.map((event) => String(event.id) === String(id) ? { ...event, ...payload } : event); return mockStore.find((event) => String(event.id) === String(id)) }
-    return jsonRequest(`/actividades/${id}/`, { method: 'PATCH', body: JSON.stringify(payload) })
+    return jsonRequest(`/actividades/${id}/`, { method: 'PUT', body: JSON.stringify(payload) })
   },
   async deleteEvent(id) {
     if (USE_MOCKS) { mockStore = mockStore.filter((event) => String(event.id) !== String(id)); return true }
@@ -49,7 +52,7 @@ export const eventServices = {
   },
   async updateSubtask(id, payload) {
     if (USE_MOCKS) { mockStore = mockStore.map((event) => ({ ...event, subtasks: (event.subtasks || []).map((task) => String(task.id) === String(id) ? { ...task, ...payload } : task) })); return { ...payload, id } }
-    return jsonRequest(`/subtareas/${id}/`, { method: 'PATCH', body: JSON.stringify(payload) })
+    return jsonRequest(`/subtareas/${id}/`, { method: 'PUT', body: JSON.stringify(payload) })
   },
   async deleteSubtask(id) {
     if (USE_MOCKS) { mockStore = mockStore.map((event) => ({ ...event, subtasks: (event.subtasks || []).filter((task) => String(task.id) !== String(id)) })); return true }
