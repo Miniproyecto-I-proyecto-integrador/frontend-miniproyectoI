@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import LoadingSpinner from "../common/LoadingSpinner";
+import FormError from "../common/FormError";
 
 const initialForm = (event) => ({
   user_id: event.user_id,
@@ -36,9 +37,7 @@ export default function EventEditModal({ event, onClose, onSubmit }) {
       await onSubmit(form);
       onClose();
     } catch (error) {
-      setServerError(
-        error.message || "No pudimos actualizar el evento, por favor reintenta",
-      );
+      setServerError("No pudimos guardar el evento, por favor reintenta");
     } finally {
       setLoading(false);
     }
@@ -68,13 +67,6 @@ export default function EventEditModal({ event, onClose, onSubmit }) {
           <X size={18} />
         </button>
         <h2 id="event-edit-title">Editar evento</h2>
-        {serverError && (
-          <div className="server-error">
-            <AlertCircle size={18} />
-            <span>{serverError}</span>
-            <button onClick={() => setServerError("")}>Reintentar</button>
-          </div>
-        )}
         <form onSubmit={submit}>
           <div className="form-block">
             <h3>¿Qué evento estás organizando?</h3>
@@ -105,6 +97,8 @@ export default function EventEditModal({ event, onClose, onSubmit }) {
               />
             </label>
           </div>
+          {serverError && <FormError message={serverError} />}
+          <div className="modal-actions"></div>
           <div className="modal-actions">
             <button
               type="button"

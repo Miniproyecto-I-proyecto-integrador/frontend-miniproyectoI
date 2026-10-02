@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { X } from "lucide-react";
+import FormError from "../common/FormError";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 const empty = {
@@ -54,9 +55,7 @@ export default function SubtaskModal({
       });
       onClose();
     } catch (error) {
-      setServerError(
-        error.message || "No pudimos guardar la subtarea, por favor reintenta",
-      );
+      setServerError("No pudimos guardar el evento, por favor reintenta");
     } finally {
       setLoading(false);
     }
@@ -88,13 +87,6 @@ export default function SubtaskModal({
         <h2 id="subtask-title">
           {task ? "Editar subtarea" : "Crear subtarea"}
         </h2>
-        {serverError && (
-          <div className="server-error">
-            <AlertCircle size={18} />
-            {serverError}
-            <button onClick={() => setServerError("")}>Reintentar</button>
-          </div>
-        )}
         <form onSubmit={submit}>
           <div className="form-block">
             <h3>¿Qué gestión necesitas hacer?</h3>
@@ -130,6 +122,8 @@ export default function SubtaskModal({
               />
             </label>
           </div>
+          {serverError && <FormError message={serverError} />}
+          <div className="modal-actions"></div>
           <div className="modal-actions">
             <button
               type="button"

@@ -176,6 +176,10 @@ body {
 .event-card,
 .event-detail-card,
 .subtask-row {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fff;
@@ -462,28 +466,85 @@ body {
   gap: 20px;
   margin-bottom: 12px;
 }
+/* antes: sin justify-content → ahora separa título (izq) y estado (der) */
+.subtask-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.subtask-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.subtask-top h3 {
+  margin: 0;
+}
+
 .subtask-title {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
 }
+/** revisar*/
 .subtask-title h3 {
   margin-right: 6px;
 }
+
+.subtask-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .subtask-details {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 8px;
   color: var(--muted);
   font-size: 13px;
-  margin-top: 12px;
 }
+
+.subtask-body .row-actions {
+  margin-left: auto;
+}
+
+.subtask-details span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+/** revisar*/
 .subtask-details b {
   color: var(--ink);
 }
+
+.status-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .status-pending {
   background: var(--soft);
+}
+
+.subtask-actions {
+  align-self: flex-end;
 }
 .status-in_progress {
   background: var(--blue-soft);
@@ -659,6 +720,39 @@ body {
 .subtask-modal .loading-spinner {
   color: #fff;
 }
+
+.form-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  background: #f46262;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+.form-error-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  color: #f46262;
+  font-size: 13px;
+  font-weight: 700;
+}
+.form-error + .modal-actions {
+  margin-top: 14px;
+}
+.conversation-form .form-error {
+  margin-top: 0;
+}
+
 @media (max-width: 800px) {
   .app-shell {
     flex-direction: column;
@@ -720,9 +814,7 @@ body {
   .event-grid {
     grid-template-columns: 1fr;
   }
-  .subtask-row {
-    flex-direction: column;
-  }
+
   .row-actions {
     align-items: center;
   }
