@@ -10,29 +10,34 @@ import RiskModal from "../../components/common/RiskModal";
 import SubtaskModal from "../../components/events/SubtaskModal";
 import SubtaskRow from "../../components/events/SubtaskRow";
 import EventEditModal from "../../components/events/EventEditModal";
+import SuccessModal from "../../components/common/SuccessModal";
 
 export default function EventDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [success, setSuccess] = useState(null);
   const [event, setEvent] = useState(null);
   const [state, setState] = useState("loading");
   const [modal, setModal] = useState(null);
   const [error, setError] = useState("");
 
-  const load = useCallback(async () => {
-    setState("loading");
-    try {
-      const data = await eventServices.getEvent(id);
-      if (!data) {
-        setState("missing");
-        return;
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setState("loading");
+      try {
+        const data = await eventServices.getEvent(id);
+        if (!data) {
+          setState("missing");
+          return;
+        }
+        setEvent(data);
+        setState("ready");
+      } catch {
+        setState("error");
       }
-      setEvent(data);
-      setState("ready");
-    } catch {
-      setState("error");
-    }
-  }, [id]);
+    },
+    [id],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,17 +50,40 @@ export default function EventDetailPage() {
     const updated = await eventServices.updateActividad(id, payload);
     setEvent((current) => ({ ...current, ...updated }));
     setModal(null);
+    setSuccess({
+      title: "¡Evento actualizado!",
+      message: "Los cambios del evento se guardaron con éxito",
+    });
   };
   const saveTask = async (payload) => {
+    const editing = Boolean(modal?.task);
     if (modal?.task) await eventServices.updateSubtask(modal.task.id, payload);
     else await eventServices.createSubtask(payload);
     setModal(null);
-    await load();
+    setSuccess(
+      editing
+        ? {
+            title: "¡Subtarea actualizada!",
+            message: "Los cambios de la subtarea se guardaron con éxito",
+            redirect: false,
+          }
+        : {
+            title: "¡Subtarea creada!",
+            message: "La subtarea ha sido creada con éxito",
+            redirect: false,
+          },
+    );
+    await load(true);
   };
   const removeTask = async () => {
     try {
       await eventServices.deleteSubtask(modal.task.id);
       setModal(null);
+      setSuccess({
+        title: "¡Subtarea eliminada!",
+        message: "La subtarea ha sido eliminada con éxito",
+        redirect: false,
+      });
       await load();
     } catch (deleteError) {
       setError(deleteError.message);
@@ -64,7 +92,12 @@ export default function EventDetailPage() {
   const removeEvent = async () => {
     try {
       await eventServices.deleteEvent(id);
-      navigate("/eventos");
+      setModal(null);
+      setSuccess({
+        title: "¡Evento eliminado!",
+        message: "El evento ha sido eliminado con éxito",
+        redirect: true,
+      });
     } catch (deleteError) {
       setError(deleteError.message);
     }
@@ -81,7 +114,7 @@ export default function EventDetailPage() {
       <div className="page">
         <ErrorState
           message="No pudimos cargar el evento, por favor reintenta."
-          onRetry={load}
+          onRetry={() => load()}
         />
       </div>
     );
@@ -104,6 +137,13 @@ export default function EventDetailPage() {
             100,
         )
       : 0);
+
+  const facts = [
+    ["lugar", event.location],
+    ["cliente", event.client],
+    ["descripción", event.description],
+  ].filter(([, value]) => value?.trim());
+
   return (
     <div className="page">
       <header className="detail-header">
@@ -115,7 +155,7 @@ export default function EventDetailPage() {
       {error && <div className="server-error">{error}</div>}
       <section className="event-detail-card">
         <div className="detail-card-top">
-          <div>
+          <div className="detail-title">
             <h2>{event.name}</h2>
             <div className="detail-badges">
               <span className="badge">{event.date_event}</span>
@@ -137,21 +177,24 @@ export default function EventDetailPage() {
             </button>
           </div>
         </div>
-        <div className="event-facts">
-          <span>
-            lugar: <b>{event.location || "Sin definir"}</b>
-          </span>
-          <span>
-            cliente: <b>{event.client || "Sin definir"}</b>
-          </span>
-          <span>
-            descripción: <b>{event.description || "Sin descripción"}</b>
-          </span>
-          <span>
-            plazo límite: <b>{event.date_event}</b>
-          </span>
-        </div>
-        <ProgressBar value={progress} large />
+
+        {facts.length > 0 && (
+          <ul className="event-facts">
+            {facts.map(([label, value]) => (
+              <li key={label}>
+                <b>{label}:</b> {value}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <ProgressBar
+          value={progress}
+          large
+          showCount={true}
+          completed={0}
+          total={0}
+        />
       </section>
       <section className="subtasks-section">
         <div className="section-heading">
@@ -210,6 +253,19 @@ export default function EventDetailPage() {
           message="También se eliminarán sus subtareas logísticas."
           onCancel={() => setModal(null)}
           onConfirm={removeEvent}
+        />
+      )}
+      {success && (
+        <SuccessModal
+          title={success.title}
+          message={success.message}
+          onAccept={() => {
+            setSuccess(null);
+
+            if (success.redirect) {
+              navigate("/eventos");
+            }
+          }}
         />
       )}
     </div>
