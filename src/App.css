@@ -32,9 +32,12 @@ body {
   flex-direction: column;
   padding: 24px 16px;
 }
+
 .brand {
+  /* + justify-content */
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 0 8px;
   margin-bottom: 32px;
@@ -49,6 +52,15 @@ body {
   color: #fff;
   border-radius: 8px;
 }
+
+.new-event-button {
+  /* margin-bottom 28px → 44px */
+  width: 100%;
+  margin-bottom: 44px;
+  background: #000;
+  color: #fff;
+}
+
 .new-event-button,
 .button {
   display: inline-flex;
@@ -62,25 +74,22 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-.new-event-button {
-  width: 100%;
-  margin-bottom: 28px;
-  background: #000;
-  color: #fff;
-}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   flex: 1;
 }
 .nav-item {
+  /* gap 12→14, padding 11px 14px → 14px 16px, + font-size */
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   color: var(--muted);
   text-decoration: none;
-  padding: 11px 14px;
+  padding: 14px 16px;
+  font-size: 16px;
   border: 1px solid transparent;
   border-radius: 8px;
 }
@@ -140,6 +149,7 @@ body {
   color: var(--muted);
   margin: 0;
 }
+/* ya no se usa en sidebar*/
 .button-primary {
   background: var(--blue);
   color: #fff;
@@ -628,7 +638,11 @@ body {
 }
 @media (max-width: 800px) {
   .app-shell {
-    display: block;
+    flex-direction: column;
+  }
+
+  .main-content {
+    min-height: 0;
   }
   .sidebar {
     width: 100%;
@@ -636,15 +650,29 @@ body {
     position: sticky;
     top: 0;
     z-index: 5;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
   }
   .brand {
-    margin-bottom: 14px;
+    width: 100%;
+    margin-bottom: 0;
   }
+
   .new-event-button {
-    margin-bottom: 12px;
+    background: var(--blue);
+    color: #fff;
+    width: auto;
+    flex: none;
+    margin: 0;
+    padding: 10px 14px;
   }
   .sidebar-nav {
     flex-direction: row;
+    justify-content: space-around;
+    gap: 4px;
+    min-width: 0;
     overflow: auto;
   }
   .nav-item {
@@ -688,5 +716,14 @@ body {
   .event-facts {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .new-event-button span {
+    display: none;
+  }
+  .new-event-button {
+    padding: 10px 12px;
   }
 }

@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
+//Component that displays a sidebar with navigation links and user information
+
 const links = [
   ["/hoy", LayoutDashboard, "Hoy"],
   ["/eventos", CalendarDays, "Eventos"],
@@ -27,11 +29,11 @@ export default function Sidebar() {
         <strong>Logística</strong>
       </div>
       <button
-        className="button button-primary"
-        style={{ marginBottom: "16px" }}
+        className="new-event-button"
+        aria-label="Nuevo evento"
         onClick={() => navigate("/crear")}
       >
-        <Plus size={18} /> Nuevo evento{" "}
+        <Plus size={18} /> <span>Nuevo evento</span>
       </button>
       <nav className="sidebar-nav" aria-label="Navegación principal">
         {links.map(([to, Icon, label]) => (
@@ -40,7 +42,7 @@ export default function Sidebar() {
             to={to}
             className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
           >
-            <Icon size={18} />
+            <Icon size={22} />
             <span>{label}</span>
           </NavLink>
         ))}
