@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authServices } from "../../api/authServices";
 import AuthLayout from "../../components/common/AuthLayout";
 import FormError from "../../components/common/FormError";
-import FormField from "../../components/common/FormField";
+import FormField from "../../components/common/Formfield";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import SuccessModal from "../../components/common/SuccessModal";
 
