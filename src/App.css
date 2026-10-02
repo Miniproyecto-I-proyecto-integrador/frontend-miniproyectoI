@@ -1120,6 +1120,15 @@ body {
     width: 100%;
     max-width: 560px;
   }
+
+  .today-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .today-controls .task-summary {
+    justify-content: center;
+  }
 }
 .task-check.checked {
   background: #16a34a;
@@ -1229,4 +1238,23 @@ body {
   border-color: #fb7185;
   background: #fff1f2;
   color: #be123c;
+}
+
+.today-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.today-controls .filter-bar {
+  margin-bottom: 0;
+}
+
+.today-controls .task-summary {
+  margin-bottom: 0;
+  flex: none;
+  min-height: auto;
+  padding: 9px 14px;
 }

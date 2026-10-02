@@ -228,25 +228,26 @@ export default function HoyPage() {
       {header(true)}
 
       <PriorityBanner />
+      <div className="today-controls">
+        <FilterBar
+          events={events}
+          eventFilter={eventFilter}
+          statusFilter={statusFilter}
+          onEventChange={setEventFilter}
+          onStatusChange={setStatusFilter}
+          onClear={clearFilters}
+        />
 
-      <FilterBar
-        events={events}
-        eventFilter={eventFilter}
-        statusFilter={statusFilter}
-        onEventChange={setEventFilter}
-        onStatusChange={setStatusFilter}
-        onClear={clearFilters}
-      />
-
-      <TaskSummary
-        pendingCount={pendingSections.reduce(
-          (n, key) => n + groups[key].length,
-          0,
-        )}
-        todayCount={groups.hoy.length}
-        doneCount={groups.completadas.length}
-        statusFilter={statusFilter}
-      />
+        <TaskSummary
+          pendingCount={pendingSections.reduce(
+            (n, key) => n + groups[key].length,
+            0,
+          )}
+          todayCount={groups.hoy.length}
+          doneCount={groups.completadas.length}
+          statusFilter={statusFilter}
+        />
+      </div>
 
       {actionError && <FormError message={actionError} />}
 
