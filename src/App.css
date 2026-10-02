@@ -120,8 +120,13 @@ body {
   flex: 1;
   min-width: 0;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 .page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
@@ -265,10 +270,15 @@ body {
   padding: 54px 24px;
   margin-top: 20px;
   border-radius: 10px;
+  flex: 1;
 }
 .empty-state {
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.error-state {
+  background: #fef2f2;
 }
 .empty-state p,
 .error-state p {
@@ -276,9 +286,7 @@ body {
   margin: 0;
   color: var(--ink);
 }
-.error-state {
-  background: #fff;
-}
+
 .error-icon {
   display: grid;
   place-items: center;
