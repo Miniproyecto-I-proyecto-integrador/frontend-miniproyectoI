@@ -624,6 +624,29 @@ body {
   min-height: 90px;
   resize: vertical;
 }
+
+.form-block-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.form-block .form-block-head h2 {
+  margin: 0;
+}
+.form-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.field-error {
+  display: block;
+  margin-top: 8px;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 500;
+}
 .submit-button {
   align-self: flex-end;
   min-width: 145px;
