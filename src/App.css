@@ -420,9 +420,9 @@ body {
 }
 .task-grid {
   display: grid;
-  width: min(100%, 760px);
+  width: 100%;
   margin: 0;
-  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
 }
 .today-task {
@@ -488,6 +488,8 @@ body {
   gap: 8px;
 }
 .task-check {
+  cursor: pointer;
+  padding: 0;
   display: grid;
   place-items: center;
   width: 26px;
@@ -1118,4 +1120,113 @@ body {
     width: 100%;
     max-width: 560px;
   }
+}
+.task-check.checked {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+.task-check:disabled,
+.task-menu:disabled {
+  cursor: not-allowed;
+}
+.task-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.task-completadas {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+.task-completadas .task-heading strong {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.task-heading strong {
+  overflow-wrap: anywhere;
+}
+.task-menu-wrap {
+  position: relative;
+  flex: none;
+  margin-left: auto;
+}
+.task-menu-wrap .task-menu {
+  margin-left: 0;
+}
+.task-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px #00000026;
+}
+.task-menu-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.task-menu-list button:hover,
+.task-menu-list button:focus-visible {
+  background: var(--soft);
+}
+.task-menu-list button.danger {
+  color: var(--red);
+}
+.section-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.section-vencidas .section-count {
+  background: #ffe4e6;
+  color: #be123c;
+}
+.section-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.filter-bar {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.daily-load.over {
+  border-color: #fb7185;
+  background: #fff1f2;
+  color: #be123c;
 }

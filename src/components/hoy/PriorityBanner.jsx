@@ -7,9 +7,10 @@ export default function PriorityBanner() {
     >
       <strong>Atención:</strong>
       <span>
-        Las gestiones se agrupan en vencidas, para hoy y próximas, priorizando
-        primero las más urgentes. En caso de empate, se muestran primero las que
-        requieren menos esfuerzo.
+        Las gestiones se agrupan en vencidas, para hoy y próximas. Dentro de
+        cada grupo se ordenan por fecha (las vencidas más antiguas primero y las
+        próximas más cercanas primero); si coinciden, va primero la que requiere
+        menos horas.
       </span>
     </div>
   );

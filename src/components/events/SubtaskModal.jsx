@@ -54,8 +54,8 @@ export default function SubtaskModal({
         estimated_hours: Number(form.estimated_hours),
       });
       onClose();
-    } catch (error) {
-      setServerError("No pudimos guardar el evento, por favor reintenta");
+    } catch {
+      setServerError("No pudimos guardar la subtarea, por favor reintenta");
     } finally {
       setLoading(false);
     }

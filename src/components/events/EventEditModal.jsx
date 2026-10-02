@@ -36,7 +36,7 @@ export default function EventEditModal({ event, onClose, onSubmit }) {
     try {
       await onSubmit(form);
       onClose();
-    } catch (error) {
+    } catch {
       setServerError("No pudimos guardar el evento, por favor reintenta");
     } finally {
       setLoading(false);

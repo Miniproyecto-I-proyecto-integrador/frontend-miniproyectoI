@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 
 export default function FilterBar({
   events,
@@ -6,7 +6,10 @@ export default function FilterBar({
   statusFilter,
   onEventChange,
   onStatusChange,
+  onClear,
 }) {
+  const hasFilters = eventFilter !== "all" || statusFilter !== "all";
+
   return (
     <div className="filter-bar">
       <div className="filter-select">
@@ -37,6 +40,12 @@ export default function FilterBar({
         </select>
         <ChevronDown className="filter-icon" size={16} />
       </div>
+
+      {hasFilters && (
+        <button type="button" className="filter-clear" onClick={onClear}>
+          <X size={14} /> Limpiar filtros
+        </button>
+      )}
     </div>
   );
 }

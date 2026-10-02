@@ -1,21 +1,28 @@
 import { AlertCircle } from "lucide-react";
 
-export default function TaskSummary({ total, todayCount, statusFilter }) {
-  const label =
-    statusFilter === "pending"
-      ? "pendientes"
-      : statusFilter === "done"
-        ? "completadas"
-        : "";
-  const taskWord = total === 1 ? "tarea" : "tareas";
+const plural = (count, singular, pluralWord) =>
+  `${count} ${count === 1 ? singular : pluralWord}`;
+
+// Resumen: "6 tareas pendientes - 2 para hoy" (con el filtro "Completadas" muestra solo las completadas)
+export default function TaskSummary({
+  pendingCount,
+  todayCount,
+  doneCount,
+  statusFilter,
+}) {
+  const text =
+    statusFilter === "done"
+      ? plural(doneCount, "tarea completada", "tareas completadas")
+      : `${plural(pendingCount, "tarea pendiente", "tareas pendientes")} - ${todayCount} para hoy${
+          statusFilter === "all" && doneCount
+            ? ` - ${plural(doneCount, "completada", "completadas")}`
+            : ""
+        }`;
 
   return (
     <div className="task-summary">
       <AlertCircle size={18} />
-      <span>
-        {total} {taskWord}
-        {label ? ` ${label}` : ""} - {todayCount} para hoy
-      </span>
+      <span>{text}</span>
     </div>
   );
 }
