@@ -100,11 +100,27 @@ body {
 .sidebar-user {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px;
-  margin-top: 16px;
-  font-size: 15px;
-  font-weight: 500;
+  gap: 10px;
+}
+.user-name {
+  font-weight: 600;
+}
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.logout-button:hover,
+.logout-button:focus-visible {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--red);
 }
 .user-icon {
   display: grid;
@@ -938,6 +954,29 @@ body {
     display: none;
   }
   .sidebar-user {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .sidebar-user .user-name {
+    display: none;
+  }
+  .sidebar-user .user-icon {
+    display: none;
+  }
+  .logout-button {
+    margin-left: 0;
+  }
+  .logout-button span {
     display: none;
   }
   .page {

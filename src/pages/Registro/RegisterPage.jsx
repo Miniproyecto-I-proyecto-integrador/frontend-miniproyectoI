@@ -10,6 +10,8 @@ import SuccessModal from "../../components/common/SuccessModal";
 const emailPattern = /^\S+@\S+\.\S+$/;
 const initialForm = { first_name: "", last_name: "", email: "", password: "" };
 
+const firstError = (value) => (Array.isArray(value) ? value[0] : value);
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
@@ -21,6 +23,7 @@ export default function RegisterPage() {
   const update = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
+    setServerError("");
   };
 
   const validate = () => {
@@ -41,13 +44,37 @@ export default function RegisterPage() {
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length) return;
+
     setLoading(true);
     setServerError("");
+
     try {
-      await authServices.register({ ...form, email: form.email.trim() });
+      await authServices.register({
+        ...form,
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: form.email.trim().toLowerCase(),
+      });
       setCreated(true);
-    } catch {
-      setServerError("No pudimos crear tu cuenta, por favor reintenta");
+    } catch (error) {
+      if (error.fields && error.status === 400) {
+        const fieldErrors = {};
+
+        ["first_name", "last_name", "email", "password"].forEach(
+          (fieldName) => {
+            const message = firstError(error.fields[fieldName]);
+            if (message) fieldErrors[fieldName] = message;
+          },
+        );
+
+        setErrors(fieldErrors);
+        setServerError(
+          firstError(error.fields.non_field_errors) ||
+            "Revisa la información ingresada e inténtalo de nuevo",
+        );
+      } else {
+        setServerError("No pudimos crear tu cuenta, por favor reintenta");
+      }
     } finally {
       setLoading(false);
     }
@@ -58,6 +85,7 @@ export default function RegisterPage() {
       label={label}
       value={form[name]}
       error={errors[name]}
+      invalid={Boolean(errors[name])}
       disabled={loading}
       onChange={(e) => update(name, e.target.value)}
       {...props}
@@ -95,7 +123,11 @@ export default function RegisterPage() {
 
         {serverError && <FormError message={serverError} />}
         <div className="auth-grid auth-actions">
-          <button className="button button-primary" disabled={loading}>
+          <button
+            type="submit"
+            className="button button-primary"
+            disabled={loading}
+          >
             {loading ? <LoadingSpinner /> : "Confirmar"}
           </button>
           <button
@@ -112,9 +144,8 @@ export default function RegisterPage() {
       {created && (
         <SuccessModal
           title="¡Registro exitoso!"
-          actionLabel="Continuar"
           message="Tu cuenta ha sido creada con éxito. Ya puedes iniciar sesión"
-          onAccept={() => navigate("/login")}
+          onAccept={() => navigate("/login", { replace: true })}
         />
       )}
     </AuthLayout>

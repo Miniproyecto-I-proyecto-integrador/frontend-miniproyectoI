@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { authServices } from "../../api/authServices";
 import AuthLayout from "../../components/common/AuthLayout";
 import FormError from "../../components/common/FormError";
@@ -12,10 +12,11 @@ const emailPattern = /^\S+@\S+\.\S+$/;
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [credentialsError, setCredentialsError] = useState(false); // marca ambos campos en rojo
+  const [credentialsError, setCredentialsError] = useState(false);
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
@@ -40,30 +41,40 @@ export default function LoginPage() {
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length) return;
+
     setLoading(true);
     setServerError("");
     setCredentialsError(false);
+
     try {
-      setSession(
-        await authServices.login({
-          email: form.email.trim(),
-          password: form.password,
-        }),
-      );
+      const nextSession = await authServices.login({
+        email: form.email.trim(),
+        password: form.password,
+      });
+      setSession(nextSession);
     } catch (error) {
-      if (error.status === 401) {
+      if ([400, 401].includes(error.status)) {
         setCredentialsError(true);
         setServerError("Correo electrónico o contraseña incorrectos");
-      } else setServerError("No pudimos iniciar sesión, por favor reintenta");
+      } else {
+        setServerError("No pudimos iniciar sesión, por favor reintenta");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const accept = () => {
-    if (session.token) login(session); // con el backend real: guarda la sesión en el AuthProvider
-    navigate("/hoy");
+    if (!session?.token) return;
+
+    login(session);
+    const destination = location.state?.from?.pathname || "/hoy";
+    navigate(destination, { replace: true });
   };
+
+  if (isAuthenticated && !session) {
+    return <Navigate to="/hoy" replace />;
+  }
 
   return (
     <AuthLayout description="Inicia sesión con tu correo electrónico y contraseña, si no tienes cuenta dale clic a “Registrarse”">
@@ -93,6 +104,7 @@ export default function LoginPage() {
 
         {serverError && <FormError message={serverError} />}
         <button
+          type="submit"
           className="button button-primary auth-submit"
           disabled={loading}
         >
@@ -103,7 +115,6 @@ export default function LoginPage() {
       {session && (
         <SuccessModal
           title="Inicio de sesión exitoso"
-          actionLabel="Continuar"
           message={`Bienvenid@ de nuevo, ${session.user.first_name}. Ya puedes seguir organizando tus eventos`}
           onAccept={accept}
         />

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { AuthContext } from "./AuthContext";
 
-const STORAGE_KEY = "session"; // { token, user }
+const STORAGE_KEY = "session";
 
 const readSession = () => {
   try {
@@ -11,16 +11,14 @@ const readSession = () => {
   }
 };
 
-// Por ahora solo guarda y expone la sesión. Cuando el backend esté listo,
-// LoginPage llamará a la API y, si sale bien, ejecutará login({ token, user }).
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(readSession); // se lee una sola vez al montar: la sesión sobrevive a recargar
+  const [session, setSession] = useState(readSession);
 
   const login = useCallback((next) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch {
-      /* sin storage: la sesión vive solo en memoria */
+      // La sesión permanece en memoria si el navegador no permite storage.
     }
     setSession(next);
   }, []);
@@ -29,7 +27,7 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
-      /* nada que limpiar */
+      // No hay nada que limpiar en memoria.
     }
     setSession(null);
   }, []);
@@ -38,6 +36,7 @@ export function AuthProvider({ children }) {
     () => ({
       user: session?.user ?? null,
       token: session?.token ?? null,
+      refreshToken: session?.refreshToken ?? null,
       isAuthenticated: Boolean(session?.token),
       login,
       logout,
