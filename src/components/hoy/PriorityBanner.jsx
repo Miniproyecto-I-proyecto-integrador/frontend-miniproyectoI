@@ -1,11 +1,15 @@
-import { AlertCircle } from "lucide-react";
+// Regla visible de priorización que usa el panel de Hoy.
 export default function PriorityBanner() {
   return (
-    <div className="priority-banner">
-      <AlertCircle size={18} />
+    <div
+      className="priority-banner priority-rule"
+      aria-label="Regla de prioridad"
+    >
+      <strong>Atención:</strong>
       <span>
-        Tus gestiones se ordenan por prioridad: primero vencidas, luego las de
-        hoy y finalmente próximas. En cada grupo se prioriza el menor esfuerzo.
+        Las gestiones se agrupan en vencidas, para hoy y próximas, priorizando
+        primero las más urgentes. En caso de empate, se muestran primero las que
+        requieren menos esfuerzo.
       </span>
     </div>
   );
