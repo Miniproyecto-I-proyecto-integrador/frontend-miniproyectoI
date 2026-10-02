@@ -1,6 +1,9 @@
-//Component that displays a success modal with a title, message, and accept button
-
-export default function SuccessModal({ title, message, onAccept }) {
+export default function SuccessModal({
+  title,
+  message,
+  onAccept,
+  actionLabel = "Aceptar",
+}) {
   return (
     <div className="modal-backdrop">
       <section
@@ -13,7 +16,7 @@ export default function SuccessModal({ title, message, onAccept }) {
         <h2 id="success-title">{title}</h2>
         <p>{message}</p>
         <button className="button button-primary" onClick={onAccept}>
-          Aceptar
+          {actionLabel}
         </button>
       </section>
     </div>

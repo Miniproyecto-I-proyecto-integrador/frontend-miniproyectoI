@@ -1,9 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./context/AuthProvider";
 import Sidebar from "./components/common/Sidebar";
 import HoyPage from "./pages/Hoy/HoyPage";
 import EventosPage from "./pages/Eventos/EventosPage";
 import EventDetailPage from "./pages/EventoDetail/EventDetailPage";
 import CrearEventPage from "./pages/Crear/CrearEventPage";
+import LoginPage from "./pages/Login/LoginPage.jsx";
+import RegisterPage from "./pages/Registro/RegisterPage";
 import "./App.css";
 
 function Layout() {
@@ -36,7 +39,13 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/*" element={<Layout />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

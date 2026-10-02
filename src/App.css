@@ -53,14 +53,6 @@ body {
   border-radius: 8px;
 }
 
-.new-event-button {
-  /* margin-bottom 28px → 44px */
-  width: 100%;
-  margin-bottom: 44px;
-  background: #000;
-  color: #fff;
-}
-
 .new-event-button,
 .button {
   display: inline-flex;
@@ -74,6 +66,13 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.new-event-button {
+  /* margin-bottom 28px → 44px */
+  width: 100%;
+  margin-bottom: 44px;
+  background: var(--blue);
+  color: #fff;
+}
 
 .sidebar-nav {
   display: flex;
@@ -82,7 +81,6 @@ body {
   flex: 1;
 }
 .nav-item {
-  /* gap 12→14, padding 11px 14px → 14px 16px, + font-size */
   display: flex;
   align-items: center;
   gap: 14px;
@@ -154,7 +152,7 @@ body {
   color: var(--muted);
   margin: 0;
 }
-/* ya no se usa en sidebar*/
+
 .button-primary {
   background: var(--blue);
   color: #fff;
@@ -176,10 +174,14 @@ body {
 .event-card,
 .event-detail-card,
 .subtask-row {
-  display: flex;
+  /**display: flex;
   flex-direction: column;
   gap: 14px;
   margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 22px;**/
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fff;
@@ -280,14 +282,15 @@ body {
   color: #1d4ed8;
 }
 
-.error-state {
-  background: #fef2f2;
-}
 .empty-state p,
 .error-state p {
   max-width: 390px;
   margin: 0;
   color: var(--ink);
+}
+
+.error-state {
+  background: #fef2f2;
 }
 
 .error-icon {
@@ -462,9 +465,13 @@ body {
 }
 .subtask-row {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  flex-direction: column;
+  gap: 14px;
   margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 22px;
 }
 /* antes: sin justify-content → ahora separa título (izq) y estado (der) */
 .subtask-top {
@@ -859,5 +866,139 @@ body {
   }
   .new-event-button {
     padding: 10px 12px;
+  }
+}
+
+.auth-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  background: #fff;
+}
+.auth-image {
+  background: url("/public/imagen.jpg") center center / contain no-repeat;
+}
+.auth-panel {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 150px 48px 48px;
+  background: #fff;
+}
+.auth-brand {
+  position: absolute;
+  top: 28px;
+  right: 36px;
+}
+.auth-brand .brand {
+  margin: 0;
+  padding: 0;
+}
+.auth-content {
+  width: 100%;
+  max-width: 560px;
+}
+
+.login-form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+.auth-tabs {
+  display: flex;
+  width: fit-content;
+  margin: 48px auto 36px;
+  border: 1px solid #9ca3af;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.auth-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 22px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.auth-tab.active {
+  background: var(--blue);
+  color: #fff;
+}
+.auth-title {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 30px;
+}
+
+.auth-description {
+  max-width: 430px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.auth-form h2 {
+  margin: 28px 0 0;
+  font-size: 17px;
+}
+.auth-form h2:first-child {
+  margin-top: 0;
+}
+.auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+.auth-form .form-error {
+  margin-top: 22px;
+}
+.auth-submit {
+  width: 100%;
+  margin-top: 22px;
+}
+.auth-actions {
+  margin-top: 8px;
+}
+.auth-actions .button {
+  margin-top: 18px;
+}
+.button-cancel {
+  background: #fff;
+  color: var(--red);
+  border: 1px solid var(--line);
+}
+.auth-form .button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+@media (max-width: 800px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+  .auth-image {
+    display: none;
+  }
+  .auth-panel {
+    align-items: flex-start;
+    padding: 88px 20px 32px;
+  }
+  .auth-brand {
+    top: 20px;
+    right: 20px;
+  }
+  .auth-title {
+    font-size: 24px;
+  }
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .login-form {
+    width: 100%;
+    max-width: 560px;
   }
 }

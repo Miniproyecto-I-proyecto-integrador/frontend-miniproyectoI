@@ -25,15 +25,11 @@ export default function EventDetailPage() {
     async (silent = false) => {
       if (!silent) setState("loading");
       try {
-        const data = await eventServices.getEvent(id);
-        if (!data) {
-          setState("missing");
-          return;
-        }
-        setEvent(data);
+        setEvent(await eventServices.getEvent(id));
         setState("ready");
-      } catch {
-        setState("error");
+      } catch (err) {
+        // 404 (no existe) o 403 (es de otro organizador) → "no encontrado"; cualquier otro fallo → error con reintento
+        setState([403, 404].includes(err.status) ? "missing" : "error");
       }
     },
     [id],
@@ -122,7 +118,7 @@ export default function EventDetailPage() {
     return (
       <div className="page">
         <ErrorState
-          message="Evento no encontrado, por favor reintenta."
+          message="No encontramos este evento. Es posible que no exista o que no tengas acceso a él."
           onRetry={() => navigate("/eventos")}
           action="Volver a eventos"
         />

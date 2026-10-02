@@ -1,15 +1,13 @@
 import {
   BarChart3,
   CalendarDays,
-  CheckCircle2,
   LayoutDashboard,
   Plus,
   Settings,
   User,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-
-//Component that displays a sidebar with navigation links and user information
+import Brand from "./Brand";
 
 const links = [
   ["/hoy", LayoutDashboard, "Hoy"],
@@ -22,12 +20,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   return (
     <aside className="sidebar">
-      <div className="brand">
-        <span className="brand-mark">
-          <CheckCircle2 size={20} />
-        </span>
-        <strong>Logística</strong>
-      </div>
+      <Brand />
       <button
         className="new-event-button"
         aria-label="Nuevo evento"
