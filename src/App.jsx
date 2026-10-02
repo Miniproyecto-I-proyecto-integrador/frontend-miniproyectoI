@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 import Sidebar from "./components/common/Sidebar";
 import HoyPage from "./pages/Hoy/HoyPage";
 import EventosPage from "./pages/Eventos/EventosPage";
@@ -43,7 +44,14 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
-          <Route path="/*" element={<Layout />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

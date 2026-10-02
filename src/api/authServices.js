@@ -1,39 +1,83 @@
-const TEST_USER = {
-  first_name: "Isabela",
-  last_name: "Bermúdez",
-  email: "isabela@test.com",
-  password: "12345678",
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  "https://backend-miniproyectoi.onrender.com/api"
+).replace(/\/+$/, "");
+
+const STORAGE_KEY = "session";
+
+const request = async (path, options = {}) => {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    method: options.method || "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      body.detail ||
+      body.non_field_errors?.[0] ||
+      "No pudimos completar la solicitud";
+    const error = new Error(message);
+    error.status = response.status;
+    error.fields = body;
+    throw error;
+  }
+
+  return body;
 };
 
-const fakeSession = {
-  token: "token-de-prueba",
-  user: {
-    first_name: TEST_USER.first_name,
-    last_name: TEST_USER.last_name,
-    email: TEST_USER.email,
-  },
+const readStoredSession = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY));
+  } catch {
+    return null;
+  }
 };
 
 export const authServices = {
   login: async ({ email, password }) => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    if (email !== TEST_USER.email || password !== TEST_USER.password) {
-      const error = new Error("Credenciales incorrectas");
-      error.status = 401;
-      throw error;
-    }
-
-    return fakeSession;
-  },
-
-  register: async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    console.log("Usuario registrado:", data);
+    const data = await request("/auth/login/", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
 
     return {
-      message: "Usuario creado correctamente",
+      token: data.access_token,
+      refreshToken: data.refresh_token,
+      user: data.user,
     };
   },
+
+  register: async ({ first_name, last_name, email, password }) => {
+    // El backend usa el username de Django, pero no lo pide en la interfaz.
+    // Usamos el correo como username para mantener ambos datos consistentes.
+    return request("/auth/register/", {
+      method: "POST",
+      body: JSON.stringify({
+        username: email,
+        first_name,
+        last_name,
+        email,
+        password,
+      }),
+    });
+  },
+
+  me: async () => {
+    const session = readStoredSession();
+    if (!session?.token) return null;
+
+    return request("/auth/me/", {
+      headers: {
+        Authorization: `Bearer ${session.token}`,
+      },
+    });
+  },
+
+  getAccessToken: () => readStoredSession()?.token ?? null,
 };

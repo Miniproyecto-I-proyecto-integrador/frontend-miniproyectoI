@@ -2,12 +2,14 @@ import {
   BarChart3,
   CalendarDays,
   LayoutDashboard,
+  LogOut,
   Plus,
   Settings,
   User,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Brand from "./Brand";
+import { useAuth } from "../../context/AuthContext";
 
 const links = [
   ["/hoy", LayoutDashboard, "Hoy"],
@@ -18,6 +20,18 @@ const links = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
+  const displayName =
+    `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+    user?.email ||
+    "Usuario";
+
   return (
     <aside className="sidebar">
       <Brand />
@@ -28,6 +42,7 @@ export default function Sidebar() {
       >
         <Plus size={18} /> <span>Nuevo evento</span>
       </button>
+
       <nav className="sidebar-nav" aria-label="Navegación principal">
         {links.map(([to, Icon, label]) => (
           <NavLink
@@ -40,11 +55,26 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
       <div className="sidebar-user">
         <span className="user-icon">
           <User size={16} />
         </span>
-        <span>persona</span>
+
+        <div className="user-info">
+          <span className="user-name">{displayName}</span>
+
+          <button
+            type="button"
+            className="logout-button"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+            onClick={handleLogout}
+          >
+            <LogOut size={17} />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </div>
     </aside>
   );
