@@ -22,9 +22,11 @@ const request = async (path, options = {}) => {
       body.detail ||
       body.non_field_errors?.[0] ||
       "No pudimos completar la solicitud";
+
     const error = new Error(message);
     error.status = response.status;
     error.fields = body;
+
     throw error;
   }
 
@@ -37,6 +39,17 @@ const readStoredSession = () => {
   } catch {
     return null;
   }
+};
+
+const saveStoredSession = (session) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  } catch {
+    // Si localStorage no está disponible, la sesión no se persiste.
+  }
+
+  // Le avisamos al AuthProvider que la sesión cambió.
+  window.dispatchEvent(new Event("auth-session-updated"));
 };
 
 export const authServices = {
@@ -54,8 +67,6 @@ export const authServices = {
   },
 
   register: async ({ first_name, last_name, email, password }) => {
-    // El backend usa el username de Django, pero no lo pide en la interfaz.
-    // Usamos el correo como username para mantener ambos datos consistentes.
     return request("/auth/register/", {
       method: "POST",
       body: JSON.stringify({
@@ -70,6 +81,7 @@ export const authServices = {
 
   me: async () => {
     const session = readStoredSession();
+
     if (!session?.token) return null;
 
     return request("/auth/me/", {
@@ -80,4 +92,41 @@ export const authServices = {
   },
 
   getAccessToken: () => readStoredSession()?.token ?? null,
+
+  getRefreshToken: () => readStoredSession()?.refreshToken ?? null,
+
+  refreshAccessToken: async () => {
+    const session = readStoredSession();
+
+    if (!session?.refreshToken) {
+      throw new Error("No existe un refresh token");
+    }
+
+    const data = await request("/auth/refresh/", {
+      method: "POST",
+      body: JSON.stringify({
+        refresh_token: session.refreshToken,
+      }),
+    });
+
+    const updatedSession = {
+      ...session,
+      token: data.access_token,
+      refreshToken: data.refresh_token || session.refreshToken,
+    };
+
+    saveStoredSession(updatedSession);
+
+    return updatedSession;
+  },
+
+  clearSession: () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // No hay nada que limpiar.
+    }
+
+    window.dispatchEvent(new Event("auth-session-updated"));
+  },
 };
