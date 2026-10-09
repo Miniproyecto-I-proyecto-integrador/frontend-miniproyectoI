@@ -20,15 +20,15 @@ export default function AuthLayout({ description, children }) {
           <p className="auth-description">{description}</p>
 
           <nav className="auth-tabs" aria-label="Acceso">
-            <NavLink to="/registro" className={tab}>
-              {({ isActive }) => (
-                <>{isActive && <Check size={14} />} Registrarse</>
-              )}
-            </NavLink>
-
             <NavLink to="/login" className={tab}>
               {({ isActive }) => (
                 <>{isActive && <Check size={14} />} Iniciar sesión</>
+              )}
+            </NavLink>
+
+            <NavLink to="/registro" className={tab}>
+              {({ isActive }) => (
+                <>{isActive && <Check size={14} />} Registrarse</>
               )}
             </NavLink>
           </nav>

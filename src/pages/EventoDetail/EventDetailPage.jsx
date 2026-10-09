@@ -145,7 +145,7 @@ export default function EventDetailPage() {
       <header className="detail-header">
         <h1>Detalle del evento</h1>
         <Link to="/eventos">
-          <ArrowLeft size={16} /> volver a eventos
+          <ArrowLeft size={16} /> Volver a eventos
         </Link>
       </header>
       {error && <div className="server-error">{error}</div>}
@@ -163,13 +163,13 @@ export default function EventDetailPage() {
               className="text-button edit"
               onClick={() => setModal({ type: "event-edit" })}
             >
-              <Pencil size={14} /> editar
+              <Pencil size={14} /> Editar
             </button>
             <button
               className="text-button delete"
               onClick={() => setModal({ type: "event-delete" })}
             >
-              <Trash2 size={14} /> borrar
+              <Trash2 size={14} /> Borrar
             </button>
           </div>
         </div>

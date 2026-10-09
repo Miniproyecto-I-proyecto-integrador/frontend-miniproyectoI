@@ -7,7 +7,7 @@ import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 
-export default function EventosPage() {
+export default function EventosPage({ loadingMessage = "Cargando tus eventos..." }) {
   const [events, setEvents] = useState([]);
   const [state, setState] = useState("loading");
   const navigate = useNavigate();
@@ -42,7 +42,10 @@ export default function EventosPage() {
       </header>
       {state === "loading" && (
         <div className="center-state">
-          <LoadingSpinner />
+          <div className="loading-message">
+            <LoadingSpinner label={loadingMessage.replace(/\.\.\.$/, "")} />
+            <p>{loadingMessage}</p>
+          </div>
         </div>
       )}
       {state === "error" && (

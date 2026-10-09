@@ -1,10 +1,12 @@
+import { createPortal } from "react-dom";
+
 export default function SuccessModal({
   title,
   message,
   onAccept,
   actionLabel = "Aceptar",
 }) {
-  return (
+  return createPortal(
     <div className="modal-backdrop">
       <section
         className="modal success-modal"
@@ -19,6 +21,7 @@ export default function SuccessModal({
           {actionLabel}
         </button>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

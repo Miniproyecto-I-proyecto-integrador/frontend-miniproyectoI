@@ -34,6 +34,7 @@ export default function TodayTaskCard({
   onToggleDone,
   onEdit,
   onDelete,
+  onReschedule,
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -129,10 +130,16 @@ export default function TodayTaskCard({
         </div>
       </div>
 
-      <div className="today-task-event">
+      <button
+        type="button"
+        className="today-task-event"
+        aria-label={`Reprogramar ${task.name}, evento ${task.eventName}`}
+        disabled={busy || done || !onReschedule}
+        onClick={() => onReschedule?.(task)}
+      >
         <CalendarDays size={18} />
         <span>{task.eventName}</span>
-      </div>
+      </button>
 
       <div className="today-task-meta">
         <span>

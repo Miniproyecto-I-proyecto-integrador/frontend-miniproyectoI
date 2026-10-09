@@ -18,8 +18,14 @@ function Layout() {
         <Routes>
           <Route path="/" element={<Navigate to="/hoy" replace />} />
           <Route path="/hoy" element={<HoyPage />} />
-          <Route path="/eventos" element={<EventosPage />} />
-          <Route path="/progreso" element={<EventosPage />} />
+          <Route
+            path="/eventos"
+            element={<EventosPage loadingMessage="Cargando tus eventos..." />}
+          />
+          <Route
+            path="/progreso"
+            element={<EventosPage loadingMessage="Cargando tu progreso..." />}
+          />
           <Route path="/evento/:id" element={<EventDetailPage />} />
           <Route path="/crear" element={<CrearEventPage />} />
           <Route
