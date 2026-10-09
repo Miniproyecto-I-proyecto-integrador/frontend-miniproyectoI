@@ -76,24 +76,24 @@ export default function Sidebar() {
           />
         </div>
 
-      <div className="sidebar-user">
-        <span className="user-icon">
-          <User size={16} />
-        </span>
+        <div className="sidebar-user">
+          <span className="user-icon">
+            <User size={16} />
+          </span>
 
-        <div className="user-info">
-          <span className="user-name">{displayName}</span>
+          <div className="user-info">
+            <span className="user-name">{displayName}</span>
 
-          <button
-            type="button"
-            className="logout-button"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-            onClick={handleLogout}
-          >
-            <LogOut size={17} />
-            <span>Cerrar sesión</span>
-          </button>
+            <button
+              type="button"
+              className="logout-button"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              onClick={handleLogout}
+            >
+              <LogOut size={17} />
+              <span>Cerrar sesión</span>
+            </button>
           </div>
         </div>
       </div>
