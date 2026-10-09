@@ -65,7 +65,9 @@ export default function Sidebar() {
             className="limit-toggle-button"
             onClick={() => setShowLimitPopover((prev) => !prev)}
           >
-            <Settings size={18} />
+            <span className="limit-toggle-icon">
+              <Settings size={18} />
+            </span>
             <span>Límite diario</span>
           </button>
 

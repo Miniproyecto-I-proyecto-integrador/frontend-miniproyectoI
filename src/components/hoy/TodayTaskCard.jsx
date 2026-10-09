@@ -7,6 +7,7 @@ import {
   Eye,
   MoreVertical,
   Pencil,
+  RefreshCw,
   RotateCcw,
   Trash2,
 } from "lucide-react";
@@ -130,26 +131,33 @@ export default function TodayTaskCard({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="today-task-event"
-        aria-label={`Reprogramar ${task.name}, evento ${task.eventName}`}
-        disabled={busy || done || !onReschedule}
-        onClick={() => onReschedule?.(task)}
-      >
+      <div className="today-task-event">
         <CalendarDays size={18} />
         <span>{task.eventName}</span>
-      </button>
+      </div>
 
       <div className="today-task-meta">
         <span>
           <Clock3 size={18} />
           {task.estimated_hours}h
         </span>
-        <span>
+      </div>
+
+      <div className="today-task-footer">
+        <button
+          type="button"
+          className="today-task-reschedule"
+          aria-label={`Reprogramar ${task.name}`}
+          disabled={busy || done || !onReschedule}
+          onClick={() => onReschedule?.(task)}
+        >
+          <RefreshCw size={16} />
+          <span>Reprogramar</span>
+        </button>
+        <div className="today-task-due-date">
           {group === "hoy" ? "hoy, " : ""}
           {formatShortDate(task.due_date)}
-        </span>
+        </div>
       </div>
     </article>
   );
