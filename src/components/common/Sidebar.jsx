@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BarChart3,
   CalendarDays,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Brand from "./Brand";
+import DailyLimitPopover from "./DailyLimitPopover";
 import { useAuth } from "../../context/AuthContext";
 
 const links = [
@@ -21,6 +23,7 @@ const links = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showLimitPopover, setShowLimitPopover] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -56,6 +59,23 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      <div className="sidebar-footer">
+        <div className="limit-trigger-wrapper">
+          <button
+            type="button"
+            className="limit-toggle-button"
+            onClick={() => setShowLimitPopover((prev) => !prev)}
+          >
+            <Settings size={18} />
+            <span>Límite diario</span>
+          </button>
+
+          <DailyLimitPopover
+            isOpen={showLimitPopover}
+            onClose={() => setShowLimitPopover(false)}
+          />
+        </div>
+
       <div className="sidebar-user">
         <span className="user-icon">
           <User size={16} />
@@ -74,6 +94,7 @@ export default function Sidebar() {
             <LogOut size={17} />
             <span>Cerrar sesión</span>
           </button>
+          </div>
         </div>
       </div>
     </aside>

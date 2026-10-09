@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { eventServices } from "../../api/eventServices";
+import { eventServices, getDailyLimit } from "../../api/eventServices";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import FormError from "../../components/common/FormError";
@@ -13,7 +13,12 @@ import PriorityBanner from "../../components/hoy/PriorityBanner";
 import TaskSummary from "../../components/hoy/TaskSummary";
 import TodayTaskCard from "../../components/hoy/TodayTaskCard";
 import {
-  DAILY_LIMIT_HOURS,
+  ActionErrorModal,
+  OverloadConflictModal,
+  ReduceHoursModal,
+  RescheduleModal,
+} from "../../components/hoy/ReprogramModals";
+import {
   flattenTasks,
   getToday,
   groupTasks,
@@ -37,7 +42,6 @@ const sectionTitles = {
   completadas: "Completadas",
 };
 
-// Mensaje pequeño cuando una sección no tiene gestiones
 const sectionEmptyMessages = {
   vencidas: "No tienes gestiones vencidas.",
   hoy: "No tienes gestiones para hoy.",
@@ -47,15 +51,18 @@ const sectionEmptyMessages = {
 export default function HoyPage() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [status, setStatus] = useState("loading");
   const [eventFilter, setEventFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [modal, setModal] = useState(null); // null | { type: "edit" | "delete", task }
-  const [busyId, setBusyId] = useState(null); // gestión con una acción en curso
+  const [dailyLimit, setDailyLimit] = useState(null);
+  const [dailyLimitError, setDailyLimitError] = useState(false);
+
+  // Estado general para modales: edit | delete | reschedule | overload | reduceHours | error
+  const [modal, setModal] = useState(null);
+  const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState("");
   const [success, setSuccess] = useState(null);
 
-  // silent = refrescar sin cambiar a la pantalla de carga (se usa después de editar, completar o eliminar)
   const load = useCallback(async (silent = false) => {
     if (!silent) setStatus("loading");
     try {
@@ -70,6 +77,29 @@ export default function HoyPage() {
     }
   }, []);
 
+  const today = getToday();
+  const refreshDailyLimit = useCallback(async () => {
+    try {
+      const data = await getDailyLimit(today);
+      const limit = Number(data?.daily_hours_limit);
+      if (!Number.isFinite(limit)) {
+        throw new Error("La respuesta no contiene un límite diario válido");
+      }
+      setDailyLimit(limit);
+      setDailyLimitError(false);
+    } catch {
+      setDailyLimit(null);
+      setDailyLimitError(true);
+    }
+  }, [today]);
+
+  useEffect(() => {
+    void refreshDailyLimit();
+    window.addEventListener("daily-limit-updated", refreshDailyLimit);
+    return () =>
+      window.removeEventListener("daily-limit-updated", refreshDailyLimit);
+  }, [refreshDailyLimit]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       void load();
@@ -78,17 +108,13 @@ export default function HoyPage() {
     return () => clearTimeout(timer);
   }, [load]);
 
-  const today = getToday();
-
   const allTasks = useMemo(() => flattenTasks(events), [events]);
 
-  // Carga de hoy: horas de las gestiones pendientes con fecha de hoy (sin filtros)
   const todayHours = useMemo(
     () => sumHours(groupTasks(allTasks, today).hoy),
     [allTasks, today],
   );
 
-  // Los filtros se aplican antes de agrupar, así la regla de prioridad se mantiene
   const groups = useMemo(
     () =>
       groupTasks(
@@ -107,7 +133,6 @@ export default function HoyPage() {
     setStatusFilter("all");
   };
 
-  // Ejecuta una acción de la tarjeta (completar / eliminar) y refresca la lista
   const runAction = async (task, action, errorMessage) => {
     setBusyId(task.id);
     setActionError("");
@@ -144,7 +169,6 @@ export default function HoyPage() {
     );
   };
 
-  // El SubtaskModal muestra su propio error si esto lanza una excepción
   const saveEdit = async (payload) => {
     await eventServices.updateSubtask(modal.task.id, payload);
     setModal(null);
@@ -155,6 +179,110 @@ export default function HoyPage() {
     await load(true);
   };
 
+  const showOverload = (task, targetDate, conflict) => {
+    setModal({ type: "overload", task, targetDate, conflict });
+  };
+
+  const showRescheduleError = (error) => {
+    setModal({
+      type: "error",
+      title: "Error al actualizar",
+      message:
+        error?.message || "Ha ocurrido un error al intentar reprogramar la subtarea",
+    });
+  };
+
+  const handleSelectDate = async (targetDate) => {
+    const { task, resolution } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      if (resolution === "move") {
+        const result = await eventServices.moveSubtask(
+          task.id,
+          targetDate,
+          today,
+        );
+        if (!result.conflict_resolved) {
+          showOverload(task, targetDate, result.conflict);
+          return;
+        }
+      } else {
+        await eventServices.rescheduleSubtask(task.id, targetDate);
+      }
+
+      setSuccess({
+        title: "Gestión reprogramada",
+        message: "La fecha de la subtarea se actualizó correctamente.",
+      });
+      await load(true);
+    } catch (error) {
+      if (error?.fields?.conflict) {
+        showOverload(task, targetDate, error.fields.conflict);
+      } else {
+        showRescheduleError(error);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openMoveDatePicker = async () => {
+    const { task } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      const result = await eventServices.suggestSubtaskDay(task.id, today);
+      setModal({
+        type: "reschedule",
+        resolution: "move",
+        task,
+        suggestedDate: result?.suggestion?.date || "",
+        suggestionMessage:
+          result?.suggestion?.message ||
+          result?.message ||
+          "No encontramos una fecha sugerida; puedes seleccionar una fecha manualmente.",
+      });
+    } catch (error) {
+      showRescheduleError(error);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const reduceHoursAndReschedule = async (newHours) => {
+    const { task, targetDate } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      const result = await eventServices.reduceSubtaskHours(
+        task.id,
+        Number(newHours),
+        today,
+      );
+      if (!result.conflict_resolved) {
+        showOverload(task, targetDate, result.conflict);
+        return;
+      }
+
+      await eventServices.rescheduleSubtask(task.id, targetDate);
+      setSuccess({
+        title: "Gestión reprogramada",
+        message:
+          "Se actualizaron las horas estimadas y la fecha de la subtarea.",
+      });
+      await load(true);
+    } catch (error) {
+      if (error?.fields?.conflict) {
+        showOverload(task, targetDate, error.fields.conflict);
+      } else {
+        showRescheduleError(error);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const header = (showLoad) => (
     <header className="page-header">
       <div>
@@ -163,9 +291,15 @@ export default function HoyPage() {
       </div>
       {showLoad && (
         <span
-          className={`daily-load ${todayHours > DAILY_LIMIT_HOURS ? "over" : ""}`}
+          className={`daily-load ${dailyLimit !== null && todayHours > dailyLimit ? "over" : ""}`}
+          title={
+            dailyLimitError
+              ? "No pudimos consultar el límite diario"
+              : undefined
+          }
         >
-          Carga de hoy: {Number(todayHours.toFixed(1))}h / {DAILY_LIMIT_HOURS}h
+          Carga de hoy: {Number(todayHours.toFixed(1))}h /{" "}
+          {dailyLimit === null ? "—" : `${dailyLimit}h`}
         </span>
       )}
     </header>
@@ -173,8 +307,14 @@ export default function HoyPage() {
 
   if (status === "loading") {
     return (
-      <div className="center-state">
-        <LoadingSpinner />
+      <div className="page">
+        {header(true)}
+        <div className="center-state">
+          <div className="loading-message">
+            <LoadingSpinner label="Cargando tus eventos" />
+            <p>Cargando tus eventos...</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -195,7 +335,6 @@ export default function HoyPage() {
     );
   }
 
-  // Sin ninguna gestión: solo el estado vacío con la acción sugerida
   if (!allTasks.length) {
     return (
       <div className="page">
@@ -280,6 +419,9 @@ export default function HoyPage() {
                       onDelete={(item) =>
                         setModal({ type: "delete", task: item })
                       }
+                      onReschedule={(item) =>
+                        setModal({ type: "reschedule", task: item })
+                      }
                     />
                   ))}
                 </div>
@@ -291,6 +433,7 @@ export default function HoyPage() {
         })}
       </div>
 
+      {/* Renderizado Condicional de Modales */}
       {modal?.type === "edit" && (
         <SubtaskModal
           key={modal.task.id}
@@ -301,6 +444,7 @@ export default function HoyPage() {
           onSubmit={saveEdit}
         />
       )}
+
       {modal?.type === "delete" && (
         <RiskModal
           title="¿Eliminar esta gestión?"
@@ -309,6 +453,52 @@ export default function HoyPage() {
           onConfirm={confirmDelete}
         />
       )}
+
+      {modal?.type === "reschedule" && (
+        <RescheduleModal
+          task={modal.task}
+          initialDate={modal.suggestedDate}
+          suggestionMessage={modal.suggestionMessage}
+          onClose={() => setModal(null)}
+          onConfirm={handleSelectDate}
+        />
+      )}
+
+      {modal?.type === "overload" && (
+        <OverloadConflictModal
+          task={modal.task}
+          targetDate={modal.targetDate}
+          conflict={modal.conflict}
+          onCancel={() => setModal(null)}
+          onReduceHours={() =>
+            setModal({
+              type: "reduceHours",
+              task: modal.task,
+              targetDate: modal.targetDate,
+              conflict: modal.conflict,
+            })
+          }
+          onMoveOtherDay={openMoveDatePicker}
+        />
+      )}
+
+      {modal?.type === "reduceHours" && (
+        <ReduceHoursModal
+          task={modal.task}
+          conflict={modal.conflict}
+          onClose={() => setModal(null)}
+          onConfirm={reduceHoursAndReschedule}
+        />
+      )}
+
+      {modal?.type === "error" && (
+        <ActionErrorModal
+          title={modal.title}
+          message={modal.message}
+          onClose={() => setModal(null)}
+        />
+      )}
+
       {success && (
         <SuccessModal
           title={success.title}

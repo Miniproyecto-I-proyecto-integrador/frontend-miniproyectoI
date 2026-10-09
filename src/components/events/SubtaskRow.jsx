@@ -35,14 +35,14 @@ export default function SubtaskRow({
       <div className="subtask-body">
         <div className="subtask-details">
           <span>
-            <Calendar size={15} /> plazo límite: <b>{task.due_date}</b>
+            <Calendar size={15} /> Plazo límite: <b>{task.due_date}</b>
           </span>
           <span>
-            <Clock size={15} /> horas estimadas: <b>{task.estimated_hours}h</b>
+            <Clock size={15} /> Horas estimadas: <b>{task.estimated_hours}h</b>
           </span>
           {task.description?.trim() && (
             <span>
-              descripción: <b>{task.description}</b>
+              Descripción: <b>{task.description}</b>
             </span>
           )}
         </div>
@@ -53,14 +53,14 @@ export default function SubtaskRow({
             className="text-button edit"
             onClick={() => onEdit(task)}
           >
-            <Pencil size={14} /> editar
+            <Pencil size={14} /> Editar
           </button>
           <button
             type="button"
             className="text-button delete"
             onClick={() => onDelete(task)}
           >
-            <Trash2 size={14} /> borrar
+            <Trash2 size={14} /> Borrar
           </button>
         </div>
       </div>

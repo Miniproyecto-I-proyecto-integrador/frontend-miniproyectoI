@@ -37,7 +37,7 @@ export default function SubtaskModal({
     if (!form.due_date) next.due_date = "Este campo es obligatorio";
     if (form.due_date && eventDate && form.due_date > eventDate)
       next.due_date =
-        "el plazo de la subtarea no puede ser posterior a la fecha del evento";
+        "El plazo de la subtarea no puede ser posterior a la fecha del evento";
     if (!form.estimated_hours || Number(form.estimated_hours) <= 0)
       next.estimated_hours = "Las horas estimadas deben ser mayores a cero";
     if (Object.keys(next).length) {
@@ -95,14 +95,14 @@ export default function SubtaskModal({
           </div>
           <div className="form-block">
             <h3>¿Cuándo debe estar lista y cuánto tiempo te tomará?</h3>
-            {field("plazo límite*", "due_date", "date")}
+            {field("Plazo límite*", "due_date", "date")}
             {field(
-              "horas estimadas*",
+              "Horas estimadas*",
               "estimated_hours",
               "number",
               "1.5 horas",
             )}
-            {field("fecha programada", "scheduled_date", "date")}
+            {field("Fecha programada", "scheduled_date", "date")}
           </div>
           <div className="form-block">
             <h3>¿Tiene proveedor?</h3>

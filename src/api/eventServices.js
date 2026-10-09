@@ -99,6 +99,33 @@ export const eventServices = {
       body: JSON.stringify(data),
     }),
 
+  rescheduleSubtask: (id, dueDate) =>
+    request(`/subtareas/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ due_date: dueDate }),
+    }),
+
+  suggestSubtaskDay: (id, today) => {
+    const query = new URLSearchParams({ today });
+    return request(`/subtareas/${id}/sugerir-dia/?${query}`);
+  },
+
+  moveSubtask: (id, dueDate, today) => {
+    const query = new URLSearchParams({ today });
+    return request(`/subtareas/${id}/resolver-mover/?${query}`, {
+      method: "PATCH",
+      body: JSON.stringify({ due_date: dueDate }),
+    });
+  },
+
+  reduceSubtaskHours: (id, estimatedHours, today) => {
+    const query = new URLSearchParams({ today });
+    return request(`/subtareas/${id}/resolver-reducir/?${query}`, {
+      method: "PATCH",
+      body: JSON.stringify({ estimated_hours: estimatedHours }),
+    });
+  },
+
   deleteSubtask: (id) =>
     request(`/subtareas/${id}/`, {
       method: "DELETE",
@@ -115,3 +142,17 @@ export const eventServices = {
     return request(`/capacidad-diaria/resumen/?${query}`);
   },
 };
+
+
+export async function getDailyLimit(today) {
+  const query = today ? `?today=${encodeURIComponent(today)}` : "";
+  return request(`/configuracion/limite-diario/${query}`);
+}
+
+export async function updateDailyLimit(dailyHoursLimit, today) {
+  const query = today ? `?today=${encodeURIComponent(today)}` : "";
+  return request(`/configuracion/limite-diario/${query}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ daily_hours_limit: Number(dailyHoursLimit) }),
+  });
+}

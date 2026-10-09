@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout description="Para poder registrarte y organizar tus eventos debes completar la siguiente información">
-      <form className="auth-form" onSubmit={submit} noValidate>
+      <form className="auth-form reg-form" onSubmit={submit} noValidate>
         <h2>¿Cómo es tu nombre?</h2>
         <div className="auth-grid">
           {field("Nombres*", "first_name", {
