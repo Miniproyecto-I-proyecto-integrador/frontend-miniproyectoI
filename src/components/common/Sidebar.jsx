@@ -17,7 +17,6 @@ const links = [
   ["/hoy", LayoutDashboard, "Hoy"],
   ["/eventos", CalendarDays, "Eventos"],
   ["/progreso", BarChart3, "Progreso"],
-  ["/configuracion", Settings, "Configuración"],
 ];
 
 export default function Sidebar() {
