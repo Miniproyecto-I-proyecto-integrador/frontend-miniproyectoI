@@ -237,11 +237,11 @@ export default function HoyPage() {
         type: "reschedule",
         resolution: "move",
         task,
-        suggestedDate: result?.suggestion?.date || "",
-        suggestionMessage:
-          result?.suggestion?.message ||
-          result?.message ||
-          "No encontramos una fecha sugerida; puedes seleccionar una fecha manualmente.",
+        suggestion: result?.suggestion || null,
+        suggestionMessage: result?.suggestion
+          ? ""
+          : result?.message ||
+            "No encontramos un día con capacidad suficiente antes de la fecha del evento.",
       });
     } catch (error) {
       showRescheduleError(error);
@@ -457,7 +457,8 @@ export default function HoyPage() {
       {modal?.type === "reschedule" && (
         <RescheduleModal
           task={modal.task}
-          initialDate={modal.suggestedDate}
+          initialDate={modal.suggestion?.date || ""}
+          suggestion={modal.suggestion}
           suggestionMessage={modal.suggestionMessage}
           onClose={() => setModal(null)}
           onConfirm={handleSelectDate}
@@ -466,8 +467,6 @@ export default function HoyPage() {
 
       {modal?.type === "overload" && (
         <OverloadConflictModal
-          task={modal.task}
-          targetDate={modal.targetDate}
           conflict={modal.conflict}
           onCancel={() => setModal(null)}
           onReduceHours={() =>

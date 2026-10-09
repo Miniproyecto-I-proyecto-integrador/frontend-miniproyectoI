@@ -1,47 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, X, Info, XCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import SuccessModal from './SuccessModal';
+import DailyLimitConflictModal from './DailyLimitConflictModal';
 import { getDailyLimit, updateDailyLimit } from '../../api/eventServices';
 import { getToday } from '../../utils/hoy';
 
 export default function DailyLimitPopover({ isOpen, onClose }) {
   const [limit, setLimit] = useState('6');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [conflictReport, setConflictReport] = useState(null);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchLimit();
-    }
-  }, [isOpen]);
+    if (!isOpen) return undefined;
 
-  const fetchLimit = async () => {
-    setLoading(true);
-    setStatus({ type: 'idle', message: '' });
-    try {
-      const todayStr = getToday();
-      const data = await getDailyLimit(todayStr);
-      if (data && data.daily_hours_limit !== undefined) {
-        setLimit(String(data.daily_hours_limit));
-      }
-    } catch (err) {
-      setLimit('6');
-    } finally {
-      setLoading(false);
-    }
-  };
+    let active = true;
+    getDailyLimit(getToday())
+      .then((data) => {
+        if (active && data?.daily_hours_limit !== undefined) {
+          setLimit(String(data.daily_hours_limit));
+        }
+      })
+      .catch(() => {
+        if (active) setLimit('6');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const numValue = Number(limit);
+    const normalizedLimit = limit.trim().replace(',', '.');
+    const numValue = Number(normalizedLimit);
 
-    if (!limit || isNaN(numValue) || numValue < 1 || numValue > 16) {
+    if (!normalizedLimit || !Number.isFinite(numValue) || numValue < 1 || numValue > 16) {
       setStatus({
         type: 'error',
-        message: 'El valor debe estar entre 1 y 16 horas',
+        message: 'El valor debe ser un entero entre 1 y 16 horas.',
+      });
+      return;
+    }
+
+    if (!limit.includes(',') && !Number.isInteger(numValue)) {
+      setStatus({
+        type: 'error',
+        message: 'El valor debe ser un entero entre 1 y 16 horas.',
       });
       return;
     }
@@ -51,24 +62,27 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
 
     try {
       const todayStr = getToday();
-      await updateDailyLimit(numValue, todayStr);
+      const result = await updateDailyLimit(numValue, todayStr);
       window.dispatchEvent(new Event('daily-limit-updated'));
-      
-      // Cierra la ventanita de configuración y abre el modal de confirmación
       onClose();
-      setShowSuccessModal(true);
+
+      if (result?.has_conflicts && result.overloaded_days?.length) {
+        setConflictReport(result);
+      } else {
+        setShowSuccessModal(true);
+      }
     } catch (err) {
+      const fieldError = err?.fields?.daily_hours_limit;
+      const backendMessage = Array.isArray(fieldError)
+        ? String(fieldError[0])
+        : fieldError;
       setStatus({
         type: 'error',
-        message: err?.message || 'Ocurrió un error al guardar el límite',
+        message: backendMessage || err?.message || 'Ocurrió un error al guardar el límite',
       });
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleCloseSuccess = () => {
-    setShowSuccessModal(false);
   };
 
   return (
@@ -134,10 +148,17 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
       {/* Modal de éxito: enviamos la función a onClose, onConfirm y onClick por compatibilidad */}
       {showSuccessModal && (
         <SuccessModal
-            title="Horas reducidas"
-            message="La fecha y las horas de la subtarea se actualizaron correctamente."
-            actionLabel="Aceptar"
-            onAccept={() => setShowSuccessModal(false)}
+          title="Límite diario actualizado"
+          message="El límite diario de horas se guardó correctamente."
+          actionLabel="Aceptar"
+          onAccept={() => setShowSuccessModal(false)}
+        />
+      )}
+      {conflictReport && (
+        <DailyLimitConflictModal
+          limit={conflictReport.daily_hours_limit}
+          overloadedDays={conflictReport.overloaded_days}
+          onAccept={() => setConflictReport(null)}
         />
       )}
     </>
