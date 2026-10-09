@@ -4,10 +4,21 @@ import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 const formatHours = (value) =>
   Number(value).toLocaleString("es-CO", { maximumFractionDigits: 1 });
 
+const formatDate = (value) => {
+  if (!value) return "";
+  const [year, month, day] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat("es-CO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day));
+};
+
 // 1. Modal para seleccionar la nueva fecha (DatePicker)
 export function RescheduleModal({
   task,
   initialDate,
+  suggestion,
   suggestionMessage,
   onClose,
   onConfirm,
@@ -64,8 +75,27 @@ export function RescheduleModal({
         <p className="modal-subtitle">
           <Info size={16} /> Elige una nueva fecha
         </p>
-        {suggestionMessage && (
-          <p className="modal-subtitle">{suggestionMessage}</p>
+        {suggestion && (
+          <p className="reschedule-guidance">
+            <strong>
+              Puedes reprogramar esta gestión para el {formatDate(suggestion.date)}.
+            </strong>{" "}
+            Quedarías con <strong>{formatHours(suggestion.total_hours)} h</strong>{" "}
+            planificadas, dentro del límite diario de{" "}
+            <strong>{formatHours(suggestion.limit_hours)} h</strong>.
+          </p>
+        )}
+        {!suggestion && suggestionMessage && (
+          <div className="reschedule-guidance reschedule-guidance-warning">
+            <strong className="reschedule-guidance-title">{suggestionMessage}</strong>
+            {task.eventDate && (
+              <span>
+                No encontramos una fecha con capacidad suficiente desde mañana
+                hasta el {formatDate(task.eventDate)}. Puedes elegir una fecha
+                en el calendario; la carga se validará antes de guardar.
+              </span>
+            )}
+          </div>
         )}
 
         <div className="custom-datepicker">
@@ -125,8 +155,6 @@ export function RescheduleModal({
 
 // 2. Modal de Conflicto de Sobrecarga (HU-07)
 export function OverloadConflictModal({
-  task,
-  targetDate,
   conflict,
   onCancel,
   onReduceHours,
@@ -234,7 +262,7 @@ export function ReduceHoursModal({
           </select>
         </div>
         {!hourOptions.length && (
-          <p className="modal-subtitle">
+          <p className="resolution-warning" role="alert">
             No es posible resolver este conflicto reduciendo las horas. Elige
             otro día.
           </p>
