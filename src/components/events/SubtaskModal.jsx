@@ -54,8 +54,14 @@ export default function SubtaskModal({
         estimated_hours: Number(form.estimated_hours),
       });
       onClose();
-    } catch {
-      setServerError("No pudimos guardar la subtarea, por favor reintenta");
+    } catch (error) {
+      const conflictMessage =
+        error?.fields?.conflicto?.[0] || error?.fields?.conflict?.message;
+      setServerError(
+        conflictMessage
+          ? `No se puede guardar la subtarea porque excede el límite diario de carga. ${conflictMessage}`
+          : error?.message || "No pudimos guardar la subtarea, por favor reintenta",
+      );
     } finally {
       setLoading(false);
     }

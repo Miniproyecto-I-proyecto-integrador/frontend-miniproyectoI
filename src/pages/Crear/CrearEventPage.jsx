@@ -61,9 +61,14 @@ export default function CrearEventPage() {
           return eventServices.createSubtask(payload);
         }),
       );
+      const rejected = results.filter((result) => result.status === "rejected");
+      const conflicts = rejected.filter(({ reason }) =>
+        Boolean(reason?.fields?.conflict || reason?.fields?.conflicto),
+      );
       setCreated({
         id: event.id,
-        failed: results.filter((result) => result.status === "rejected").length,
+        failed: rejected.length,
+        conflicts: conflicts.length,
       });
     } catch {
       setServerError("No pudimos guardar el evento, por favor reintenta");
@@ -72,8 +77,47 @@ export default function CrearEventPage() {
     }
   };
 
-  // Guarda en la lista local (crear o editar) cuando el SubtaskModal se envía
-  const saveSubtask = (payload) => {
+  // Verifica la carga antes de guardar la subtarea como borrador del evento.
+  const saveSubtask = async (payload) => {
+    const capacity = await eventServices.getCapacity(payload.due_date);
+    const assignedHours = Number(capacity?.assigned_hours);
+    const limitHours = Number(capacity?.limit_hours);
+    if (!Number.isFinite(assignedHours) || !Number.isFinite(limitHours)) {
+      throw new Error("No pudimos validar la carga diaria. Intenta de nuevo.");
+    }
+
+    const otherDraftHours = subtasks.reduce((total, task) => {
+      const isBeingEdited = task.tid === subtaskModal?.task?.tid;
+      const isActive = task.status === "pending" || task.status === "in_progress";
+      return !isBeingEdited && isActive && task.due_date === payload.due_date
+        ? total + Number(task.estimated_hours || 0)
+        : total;
+    }, 0);
+    const currentHours = assignedHours + otherDraftHours;
+    const proposedHours = Number(payload.estimated_hours);
+    const totalHours = currentHours + proposedHours;
+
+    if (totalHours > limitHours) {
+      const formatHours = (hours) =>
+        Number(hours).toLocaleString("es-CO", { maximumFractionDigits: 1 });
+      const message = `Quedarías con ${formatHours(totalHours)}h de gestión planificadas (límite ${formatHours(limitHours)}h).`;
+      const error = new Error(message);
+      error.fields = {
+        conflicto: [message],
+        conflict: {
+          date: payload.due_date,
+          current_hours: currentHours,
+          proposed_hours: proposedHours,
+          total_hours: totalHours,
+          limit_hours: limitHours,
+          excess_hours: totalHours - limitHours,
+          exceeds: true,
+          options: ["move", "reduce_hours", "postpone"],
+        },
+      };
+      throw error;
+    }
+
     setSubtasks((current) =>
       subtaskModal?.task
         ? current.map((task) =>
@@ -198,10 +242,18 @@ export default function CrearEventPage() {
       )}
       {created && (
         <SuccessModal
-          title="¡Evento creado!"
+          title={
+            created.conflicts
+              ? "¡Evento creado con conflictos!"
+              : "¡Evento creado!"
+          }
           message={
             created.failed
-              ? `El evento se creó, pero ${created.failed} subtarea(s) no se pudieron guardar. Agrégalas desde el detalle.`
+              ? created.conflicts === created.failed
+                ? `El evento se creó correctamente, pero ${created.failed} subtarea(s) no se guardaron porque exceden el límite diario de carga. Agrégalas o reprográmalas desde el detalle del evento.`
+                : created.conflicts
+                  ? `El evento se creó, pero ${created.conflicts} subtarea(s) no se guardaron por conflictos de sobrecarga. Las demás subtareas tampoco pudieron guardarse. Revisa el evento para agregarlas o reprogramarlas.`
+                  : `El evento se creó, pero ${created.failed} subtarea(s) no se pudieron guardar. Agrégalas desde el detalle.`
               : "El evento ha sido creado con éxito"
           }
           onAccept={() => navigate(`/evento/${created.id}`)}
