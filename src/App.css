@@ -1544,6 +1544,8 @@ body {
   }
   .sidebar {
     width: 100%;
+    height: auto;
+    min-height: 0;
     padding: 14px;
     position: sticky;
     top: 0;
@@ -1570,8 +1572,17 @@ body {
     flex-direction: row;
     justify-content: space-around;
     gap: 4px;
+    flex: 1 1 auto;
     min-width: 0;
     overflow: auto;
+  }
+  .sidebar-footer {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border-top: 0;
   }
   .nav-item {
     flex: none;
