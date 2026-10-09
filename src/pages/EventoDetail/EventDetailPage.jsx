@@ -135,9 +135,9 @@ export default function EventDetailPage() {
       : 0);
 
   const facts = [
-    ["lugar", event.location],
-    ["cliente", event.client],
-    ["descripción", event.description],
+    ["Lugar", event.location],
+    ["Cliente", event.client],
+    ["Descripción", event.description],
   ].filter(([, value]) => value?.trim());
 
   return (

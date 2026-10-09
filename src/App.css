@@ -64,6 +64,14 @@ body {
   width: 100%;
 }
 
+.limit-toggle-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+}
+
 .limit-toggle-button:hover {
   color: var(--ink);
 }
@@ -996,10 +1004,6 @@ body {
   font-size: 14px;
   font-family: inherit;
   text-align: left;
-  cursor: pointer;
-}
-.today-task-event:disabled {
-  cursor: default;
 }
 .today-task-event svg,
 .today-task-meta svg {
@@ -1008,7 +1012,6 @@ body {
 .today-task-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   margin-top: 11px;
   font-size: 13px;
@@ -1018,6 +1021,42 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+.today-task-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.today-task-due-date {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+.today-task-reschedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.today-task-reschedule:hover:not(:disabled) {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.today-task-reschedule:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+.today-task-reschedule svg {
+  flex: none;
 }
 .task-check {
   cursor: pointer;
