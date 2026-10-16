@@ -1940,3 +1940,311 @@ body {
   min-height: auto;
   padding: 9px 14px;
 }
+
+/* Vista Progreso (US-10) */
+.progreso-page {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 36px clamp(24px, 3.5vw, 56px);
+}
+
+.progreso-loading .loading-spinner {
+  width: 44px;
+  height: 44px;
+  border-width: 4px;
+  border-color: #dbeafe;
+  border-top-color: var(--blue);
+}
+
+.progreso-loading p {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.progreso-empty-wrapper {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+.progreso-empty-wrapper .empty-state {
+  width: 100%;
+  min-height: 480px;
+  margin-top: 0;
+  border-radius: 14px;
+  background: #eff6ff;
+}
+
+.progreso-general-card {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.progreso-donut {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 124px;
+  height: 124px;
+}
+
+.progreso-donut-svg {
+  display: block;
+}
+
+.progreso-donut-ring {
+  transition: stroke-dashoffset 0.35s ease;
+}
+
+.progreso-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.progreso-donut-center strong {
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.progreso-donut-center span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.progreso-general-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progreso-general-header h2 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.progreso-general-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progreso-general-header p strong {
+  color: var(--ink);
+}
+
+.progreso-bar-section .progress-label {
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.progreso-track-lg {
+  height: 10px;
+}
+
+.progreso-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 2px;
+}
+
+.progreso-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.progreso-kpi-icon {
+  flex: none;
+}
+
+.progreso-kpi-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.progreso-kpi-info strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.progreso-kpi-info span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kpi-completed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.kpi-pending {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.kpi-overdue {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.progreso-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.progreso-event-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.progreso-event-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progreso-event-head h2 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.progreso-event-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progreso-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.progreso-event-progress {
+  margin-bottom: 12px;
+}
+
+.progreso-event-progress .progress-label {
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.progreso-event-summary {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progreso-event-summary strong {
+  color: var(--ink);
+}
+
+.progreso-no-subtasks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.progreso-no-subtasks p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.progreso-create-subtask-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.progreso-create-subtask-btn:hover {
+  background: #eff6ff;
+}
+
+@media (max-width: 800px) {
+  .progreso-page {
+    padding: 26px 18px;
+  }
+
+  .progreso-general-card {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .progreso-general-body {
+    width: 100%;
+  }
+
+  .progreso-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progreso-events-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

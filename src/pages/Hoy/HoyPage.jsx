@@ -133,12 +133,17 @@ export default function HoyPage() {
     setStatusFilter("all");
   };
 
+  const notifyTasksUpdated = () => {
+    window.dispatchEvent(new Event("tasks-updated"));
+  };
+
   const runAction = async (task, action, errorMessage) => {
     setBusyId(task.id);
     setActionError("");
     try {
       await action();
       await load(true);
+      notifyTasksUpdated();
     } catch {
       setActionError(errorMessage);
     } finally {
@@ -149,13 +154,16 @@ export default function HoyPage() {
   const toggleDone = (task) =>
     runAction(
       task,
-      () =>
-        eventServices.updateSubtask(
+      () => {
+        const nextStatus = task.status === "done" ? "pending" : "done";
+        if (nextStatus === "done") {
+          return eventServices.registerExecution(task.id, { status: "done" });
+        }
+        return eventServices.updateSubtask(
           task.id,
-          toSubtaskPayload(task, {
-            status: task.status === "done" ? "pending" : "done",
-          }),
-        ),
+          toSubtaskPayload(task, { status: "pending" }),
+        );
+      },
       "No pudimos actualizar la gestión, por favor reintenta",
     );
 
@@ -177,6 +185,7 @@ export default function HoyPage() {
       message: "Los cambios de la subtarea se guardaron con éxito",
     });
     await load(true);
+    notifyTasksUpdated();
   };
 
   const showOverload = (task, targetDate, conflict) => {
@@ -216,6 +225,7 @@ export default function HoyPage() {
         message: "La fecha de la subtarea se actualizó correctamente.",
       });
       await load(true);
+      notifyTasksUpdated();
     } catch (error) {
       if (error?.fields?.conflict) {
         showOverload(task, targetDate, error.fields.conflict);
@@ -272,6 +282,7 @@ export default function HoyPage() {
           "Se actualizaron las horas estimadas y la fecha de la subtarea.",
       });
       await load(true);
+      notifyTasksUpdated();
     } catch (error) {
       if (error?.fields?.conflict) {
         showOverload(task, targetDate, error.fields.conflict);
