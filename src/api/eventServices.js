@@ -1,9 +1,13 @@
+import { API_URL } from "../../config";
 import { authServices } from "./authServices";
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  "https://backend-miniproyectoi.onrender.com/api"
-).replace(/\/+$/, "");
+const buildApiUrl = (path) => {
+  const base = API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+  const normalizedPath = path.startsWith("/api/")
+    ? path
+    : `/api${path.startsWith("/") ? path : `/${path}`}`;
+  return `${base}${normalizedPath}`;
+};
 
 const request = async (path, options = {}, canRefresh = true) => {
   const token = authServices.getAccessToken();
@@ -17,7 +21,7 @@ const request = async (path, options = {}, canRefresh = true) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     ...options,
     method: options.method || "GET",
     headers,
@@ -60,59 +64,59 @@ const request = async (path, options = {}, canRefresh = true) => {
 };
 
 export const eventServices = {
-  listEvents: () => request("/actividades/"),
+  listEvents: () => request("/api/actividades/"),
 
-  getEvent: (id) => request(`/actividades/${id}/`),
+  getEvent: (id) => request(`/api/actividades/${id}/`),
 
   createEvent: (data) =>
-    request("/actividades/", {
+    request("/api/actividades/", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateActividad: (id, data) =>
-    request(`/actividades/${id}/`, {
+    request(`/api/actividades/${id}/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   updateEvent: (id, data) =>
-    request(`/actividades/${id}/`, {
+    request(`/api/actividades/${id}/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   deleteEvent: (id) =>
-    request(`/actividades/${id}/`, {
+    request(`/api/actividades/${id}/`, {
       method: "DELETE",
     }),
 
   createSubtask: (data) =>
-    request("/subtareas/", {
+    request("/api/subtareas/", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateSubtask: (id, data) =>
-    request(`/subtareas/${id}/`, {
+    request(`/api/subtareas/${id}/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   rescheduleSubtask: (id, dueDate) =>
-    request(`/subtareas/${id}/`, {
+    request(`/api/subtareas/${id}/`, {
       method: "PATCH",
       body: JSON.stringify({ due_date: dueDate }),
     }),
 
   suggestSubtaskDay: (id, today) => {
     const query = new URLSearchParams({ today });
-    return request(`/subtareas/${id}/sugerir-dia/?${query}`);
+    return request(`/api/subtareas/${id}/sugerir-dia/?${query}`);
   },
 
   moveSubtask: (id, dueDate, today) => {
     const query = new URLSearchParams({ today });
-    return request(`/subtareas/${id}/resolver-mover/?${query}`, {
+    return request(`/api/subtareas/${id}/resolver-mover/?${query}`, {
       method: "PATCH",
       body: JSON.stringify({ due_date: dueDate }),
     });
@@ -120,18 +124,34 @@ export const eventServices = {
 
   reduceSubtaskHours: (id, estimatedHours, today) => {
     const query = new URLSearchParams({ today });
-    return request(`/subtareas/${id}/resolver-reducir/?${query}`, {
+    return request(`/api/subtareas/${id}/resolver-reducir/?${query}`, {
       method: "PATCH",
       body: JSON.stringify({ estimated_hours: estimatedHours }),
     });
   },
 
+  // US-09: PATCH /api/subtareas/{id}/registrar-ejecucion/
+  registerExecution: (id, { status, note, due_date } = {}) => {
+    const payload = { status };
+    if (note !== undefined && note !== "") {
+      payload.note = note;
+    }
+    if (status === "postponed" && due_date) {
+      payload.due_date = due_date;
+    }
+    return request(`/api/subtareas/${id}/registrar-ejecucion/`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+
   deleteSubtask: (id) =>
-    request(`/subtareas/${id}/`, {
+    request(`/api/subtareas/${id}/`, {
       method: "DELETE",
     }),
 
-  getProgress: (id) => request(`/actividades/${id}/progreso/`),
+  // US-10: GET /api/actividades/{id}/progreso/
+  getProgress: (id) => request(`/api/actividades/${id}/progreso/`),
 
   getCapacity: (date, userId) => {
     const query = new URLSearchParams({
@@ -139,7 +159,7 @@ export const eventServices = {
       ...(userId ? { user_id: userId } : {}),
     });
 
-    return request(`/capacidad-diaria/resumen/?${query}`);
+    return request(`/api/capacidad-diaria/resumen/?${query}`);
   },
 };
 

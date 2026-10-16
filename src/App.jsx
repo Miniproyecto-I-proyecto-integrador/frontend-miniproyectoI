@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import Sidebar from "./components/common/Sidebar";
 import HoyPage from "./pages/Hoy/HoyPage";
 import EventosPage from "./pages/Eventos/EventosPage";
+import Progreso from "./pages/Progreso/Progreso";
 import EventDetailPage from "./pages/EventoDetail/EventDetailPage";
 import CrearEventPage from "./pages/Crear/CrearEventPage";
 import LoginPage from "./pages/Login/LoginPage.jsx";
@@ -22,10 +23,7 @@ function Layout() {
             path="/eventos"
             element={<EventosPage loadingMessage="Cargando tus eventos..." />}
           />
-          <Route
-            path="/progreso"
-            element={<EventosPage loadingMessage="Cargando tu progreso..." />}
-          />
+          <Route path="/progreso" element={<Progreso />} />
           <Route path="/evento/:id" element={<EventDetailPage />} />
           <Route path="/crear" element={<CrearEventPage />} />
           <Route

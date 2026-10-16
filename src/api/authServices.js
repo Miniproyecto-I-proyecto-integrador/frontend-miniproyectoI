@@ -1,12 +1,17 @@
-const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  "https://backend-miniproyectoi.onrender.com/api"
-).replace(/\/+$/, "");
+import { API_URL } from "../../config";
 
 const STORAGE_KEY = "session";
 
+const buildApiUrl = (path) => {
+  const base = API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+  const normalizedPath = path.startsWith("/api/")
+    ? path
+    : `/api${path.startsWith("/") ? path : `/${path}`}`;
+  return `${base}${normalizedPath}`;
+};
+
 const request = async (path, options = {}) => {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     ...options,
     method: options.method || "GET",
     headers: {
