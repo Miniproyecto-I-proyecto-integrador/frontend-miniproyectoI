@@ -155,14 +155,10 @@ export default function HoyPage() {
     runAction(
       task,
       () => {
-        const nextStatus = task.status === "done" ? "pending" : "done";
-        if (nextStatus === "done") {
-          return eventServices.registerExecution(task.id, { status: "done" });
+        if (task.status === "done") {
+          return eventServices.patchSubtask(task.id, { status: "pending" });
         }
-        return eventServices.updateSubtask(
-          task.id,
-          toSubtaskPayload(task, { status: "pending" }),
-        );
+        return eventServices.registerExecution(task.id, { status: "done" });
       },
       "No pudimos actualizar la gestión, por favor reintenta",
     );
@@ -188,8 +184,8 @@ export default function HoyPage() {
     notifyTasksUpdated();
   };
 
-  const showOverload = (task, targetDate, conflict) => {
-    setModal({ type: "overload", task, targetDate, conflict });
+  const showOverload = (task, targetDate, conflict, note = "") => {
+    setModal({ type: "overload", task, targetDate, conflict, note });
   };
 
   const showRescheduleError = (error) => {
@@ -197,11 +193,11 @@ export default function HoyPage() {
       type: "error",
       title: "Error al actualizar",
       message:
-        error?.message || "Ha ocurrido un error al intentar reprogramar la subtarea",
+        error?.message || "Ha ocurrido un error al intentar posponer la subtarea",
     });
   };
 
-  const handleSelectDate = async (targetDate) => {
+  const handleSelectDate = async (targetDate, note = "") => {
     const { task, resolution } = modal;
     setModal(null);
     setBusyId(task.id);
@@ -213,22 +209,26 @@ export default function HoyPage() {
           today,
         );
         if (!result.conflict_resolved) {
-          showOverload(task, targetDate, result.conflict);
+          showOverload(task, targetDate, result.conflict, note);
           return;
         }
-      } else {
-        await eventServices.rescheduleSubtask(task.id, targetDate);
       }
 
+      await eventServices.registerExecution(task.id, {
+        status: "postponed",
+        note,
+        due_date: targetDate,
+      });
+
       setSuccess({
-        title: "Gestión reprogramada",
-        message: "La fecha de la subtarea se actualizó correctamente.",
+        title: "Gestión pospuesta",
+        message: "La fecha y la nota de la subtarea se actualizaron correctamente.",
       });
       await load(true);
       notifyTasksUpdated();
     } catch (error) {
       if (error?.fields?.conflict) {
-        showOverload(task, targetDate, error.fields.conflict);
+        showOverload(task, targetDate, error.fields.conflict, note);
       } else {
         showRescheduleError(error);
       }
@@ -238,7 +238,7 @@ export default function HoyPage() {
   };
 
   const openMoveDatePicker = async () => {
-    const { task } = modal;
+    const { task, note } = modal;
     setModal(null);
     setBusyId(task.id);
     try {
@@ -247,6 +247,7 @@ export default function HoyPage() {
         type: "reschedule",
         resolution: "move",
         task,
+        note,
         suggestion: result?.suggestion || null,
         suggestionMessage: result?.suggestion
           ? ""
@@ -261,7 +262,7 @@ export default function HoyPage() {
   };
 
   const reduceHoursAndReschedule = async (newHours) => {
-    const { task, targetDate } = modal;
+    const { task, targetDate, note } = modal;
     setModal(null);
     setBusyId(task.id);
     try {
@@ -271,21 +272,25 @@ export default function HoyPage() {
         today,
       );
       if (!result.conflict_resolved) {
-        showOverload(task, targetDate, result.conflict);
+        showOverload(task, targetDate, result.conflict, note);
         return;
       }
 
-      await eventServices.rescheduleSubtask(task.id, targetDate);
+      await eventServices.registerExecution(task.id, {
+        status: "postponed",
+        note,
+        due_date: targetDate,
+      });
       setSuccess({
-        title: "Gestión reprogramada",
+        title: "Gestión pospuesta",
         message:
-          "Se actualizaron las horas estimadas y la fecha de la subtarea.",
+          "Se actualizaron las horas estimadas y se pospuso la subtarea.",
       });
       await load(true);
       notifyTasksUpdated();
     } catch (error) {
       if (error?.fields?.conflict) {
-        showOverload(task, targetDate, error.fields.conflict);
+        showOverload(task, targetDate, error.fields.conflict, note);
       } else {
         showRescheduleError(error);
       }
@@ -469,6 +474,7 @@ export default function HoyPage() {
         <RescheduleModal
           task={modal.task}
           initialDate={modal.suggestion?.date || ""}
+          initialNote={modal.note}
           suggestion={modal.suggestion}
           suggestionMessage={modal.suggestionMessage}
           onClose={() => setModal(null)}
@@ -486,6 +492,7 @@ export default function HoyPage() {
               task: modal.task,
               targetDate: modal.targetDate,
               conflict: modal.conflict,
+              note: modal.note,
             })
           }
           onMoveOtherDay={openMoveDatePicker}

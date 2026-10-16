@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
   Check,
-  CheckCircle2,
   Clock3,
   Eye,
+  MessageSquare,
   MoreVertical,
   Pencil,
-  RefreshCw,
-  RotateCcw,
+  RotateCw,
   Trash2,
+  Undo2,
 } from "lucide-react";
 
 const formatShortDate = (dateString) => {
@@ -17,16 +17,26 @@ const formatShortDate = (dateString) => {
 
   const [year, month, day] = dateString.split("-").map(Number);
   const date = new Date(year, month - 1, day);
-  return new Intl.DateTimeFormat("es-CO", {
-    day: "numeric",
+  const monthName = new Intl.DateTimeFormat("es-CO", {
     month: "short",
   })
     .format(date)
-    .replace(/\.$/, "");
+    .replace(/\.$/, "")
+    .toLowerCase();
+
+  return `${day} de ${monthName}`;
 };
 
-// Tarjeta de una gestión. El menú de tres puntos avisa a la página qué quiere hacer el usuario
-// (la página es la que habla con la API): ver evento, completar/reabrir, editar o eliminar.
+const getDueDateLabel = (task, group, done) => {
+  if (done) {
+    return task.due_date ? `Hecha · ${formatShortDate(task.due_date)}` : "Hecha";
+  }
+  if (!task.due_date) return "Sin fecha";
+  if (group === "vencidas") return `Venció el ${formatShortDate(task.due_date)}`;
+  if (group === "hoy") return "Para hoy";
+  return `Para el ${formatShortDate(task.due_date)}`;
+};
+
 export default function TodayTaskCard({
   task,
   group,
@@ -40,6 +50,8 @@ export default function TodayTaskCard({
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const done = task.status === "done";
+  const postponed = task.status === "postponed";
+  const hasNote = Boolean(task.note?.trim());
 
   // Cierra el menú al hacer clic fuera o al pulsar Escape
   useEffect(() => {
@@ -63,72 +75,60 @@ export default function TodayTaskCard({
     action(task);
   };
 
+  const formattedHours = Number(task.estimated_hours || 0).toFixed(1);
+
   return (
     <article className={`today-task task-${group} ${busy ? "task-busy" : ""}`}>
       <div className="task-heading">
-        <button
-          type="button"
-          className={`task-check ${done ? "checked" : ""}`}
-          aria-label={
-            done
-              ? `Marcar como pendiente: ${task.name}`
-              : `Marcar como completada: ${task.name}`
-          }
-          aria-pressed={done}
-          disabled={busy}
-          onClick={() => onToggleDone(task)}
-        >
-          {done && <Check size={14} />}
-        </button>
+        {done && (
+          <span className="task-done-badge-icon" aria-hidden="true">
+            <Check size={14} strokeWidth={3} />
+          </span>
+        )}
         <strong>{task.name}</strong>
 
-        <div className="task-menu-wrap" ref={menuRef}>
-          <button
-            className="task-menu"
-            type="button"
-            aria-label={`Opciones de ${task.name}`}
-            aria-haspopup="menu"
-            aria-expanded={open}
-            disabled={busy}
-            onClick={() => setOpen((current) => !current)}
-          >
-            <MoreVertical size={17} />
-          </button>
+        {done ? (
+          <span className="task-status-pill pill-done">Hecha</span>
+        ) : (
+          <div className="task-heading-right">
+            {postponed && (
+              <span className="task-status-pill pill-postponed">Pospuesta</span>
+            )}
 
-          {open && (
-            <div className="task-menu-list" role="menu">
-              <button type="button" role="menuitem" onClick={choose(onView)}>
-                <Eye size={16} /> Ver evento
-              </button>
+            <div className="task-menu-wrap" ref={menuRef}>
               <button
+                className="task-menu"
                 type="button"
-                role="menuitem"
-                onClick={choose(onToggleDone)}
+                aria-label={`Opciones de ${task.name}`}
+                aria-haspopup="menu"
+                aria-expanded={open}
+                disabled={busy}
+                onClick={() => setOpen((current) => !current)}
               >
-                {done ? (
-                  <>
-                    <RotateCcw size={16} /> Marcar como pendiente
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 size={16} /> Marcar como completada
-                  </>
-                )}
+                <MoreVertical size={18} />
               </button>
-              <button type="button" role="menuitem" onClick={choose(onEdit)}>
-                <Pencil size={16} /> Editar gestión
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="danger"
-                onClick={choose(onDelete)}
-              >
-                <Trash2 size={16} /> Eliminar
-              </button>
+
+              {open && (
+                <div className="task-menu-list" role="menu">
+                  <button type="button" role="menuitem" onClick={choose(onView)}>
+                    <Eye size={16} /> Ver evento
+                  </button>
+                  <button type="button" role="menuitem" onClick={choose(onEdit)}>
+                    <Pencil size={16} /> Editar gestión
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="danger"
+                    onClick={choose(onDelete)}
+                  >
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="today-task-event">
@@ -139,26 +139,68 @@ export default function TodayTaskCard({
       <div className="today-task-meta">
         <span>
           <Clock3 size={18} />
-          {task.estimated_hours}h
+          {formattedHours}h
+        </span>
+        <span className="today-task-due-date">
+          {getDueDateLabel(task, group, done)}
         </span>
       </div>
 
-      <div className="today-task-footer">
-        <button
-          type="button"
-          className="today-task-reschedule"
-          aria-label={`Reprogramar ${task.name}`}
-          disabled={busy || done || !onReschedule}
-          onClick={() => onReschedule?.(task)}
-        >
-          <RefreshCw size={16} />
-          <span>Reprogramar</span>
-        </button>
-        <div className="today-task-due-date">
-          {group === "hoy" ? "hoy, " : ""}
-          {formatShortDate(task.due_date)}
+      {!done && hasNote && (
+        <div className="today-task-note">
+          <MessageSquare size={16} className="today-task-note-icon" />
+          <div className="today-task-note-body">
+            <span className="today-task-note-label">Nota</span>
+            <p className="today-task-note-text">{task.note.trim()}</p>
+            {onReschedule && (
+              <button
+                type="button"
+                className="today-task-note-edit"
+                disabled={busy}
+                onClick={() => onReschedule(task)}
+              >
+                Editar nota
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {done ? (
+        <div className="today-task-actions today-task-actions-single">
+          <button
+            type="button"
+            className="task-action-btn task-action-undo"
+            disabled={busy}
+            onClick={() => onToggleDone(task)}
+          >
+            <Undo2 size={17} strokeWidth={2.2} />
+            <span>Deshacer</span>
+          </button>
+        </div>
+      ) : (
+        <div className="today-task-actions">
+          <button
+            type="button"
+            className="task-action-btn task-action-done"
+            disabled={busy}
+            onClick={() => onToggleDone(task)}
+          >
+            <Check size={17} strokeWidth={2.5} />
+            <span>Marcar hecha</span>
+          </button>
+
+          <button
+            type="button"
+            className="task-action-btn task-action-postpone"
+            disabled={busy || !onReschedule}
+            onClick={() => onReschedule?.(task)}
+          >
+            <RotateCw size={17} />
+            <span>Posponer</span>
+          </button>
+        </div>
+      )}
     </article>
   );
 }

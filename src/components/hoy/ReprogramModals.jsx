@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { getToday } from "../../utils/hoy";
 
 const formatHours = (value) =>
   Number(value).toLocaleString("es-CO", { maximumFractionDigits: 1 });
@@ -14,35 +15,64 @@ const formatDate = (value) => {
   }).format(new Date(year, month - 1, day));
 };
 
-// 1. Modal para seleccionar la nueva fecha (DatePicker)
+const FREQUENT_REASONS = [
+  "Esperando confirmación del salón",
+  "Proveedor sin responder",
+  "Cambió la fecha del evento",
+  "Falta presupuesto",
+];
+
+const MONTH_NAMES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+
+// 1. Modal para posponer gestión con fecha y nota (US-09)
 export function RescheduleModal({
   task,
   initialDate,
+  initialNote,
   suggestion,
   suggestionMessage,
   onClose,
   onConfirm,
 }) {
-  const [selectedDate, setSelectedDate] = useState(
-    initialDate || task.due_date || "",
+  const today = getToday();
+
+  const defaultDate = useMemo(() => {
+    const candidate = initialDate || task.due_date || "";
+    if (candidate && candidate >= today) return candidate;
+    if (task.eventDate && task.eventDate < today) return task.eventDate;
+    return today;
+  }, [initialDate, task.due_date, task.eventDate, today]);
+
+  const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [note, setNote] = useState(
+    (initialNote ?? task.note ?? "").slice(0, 200),
   );
+
   const [currentMonth, setCurrentMonth] = useState(() => {
-    const initial = initialDate || task.due_date;
+    const initial = defaultDate || today;
     const d = initial ? new Date(`${initial}T00:00:00`) : new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
-
-  const monthNames = [
-    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
-  ];
 
   const daysInMonth = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const date = new Date(year, month, 1);
     const days = [];
-    
+
     // Relleno de días del mes anterior
     const firstDayIndex = date.getDay();
     for (let i = 0; i < firstDayIndex; i++) {
@@ -61,33 +91,47 @@ export function RescheduleModal({
   }, [currentMonth]);
 
   const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+    );
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+    );
   };
+
+  const formattedTaskHours = Number(task.estimated_hours || 0).toFixed(1);
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-card reschedule-modal">
-        <h2 className="modal-title-accent">Reprogramar</h2>
+      <div className="modal-card reschedule-modal postpone-modal">
+        <h2 className="modal-title-accent">Posponer gestión</h2>
         <p className="modal-subtitle">
-          <Info size={16} /> Elige una nueva fecha
+          <Info size={16} />
+          <span>
+            <strong>{task.name}</strong> · {task.eventName} ·{" "}
+            {formattedTaskHours}h
+          </span>
         </p>
+
         {suggestion && (
           <p className="reschedule-guidance">
             <strong>
-              Puedes reprogramar esta gestión para el {formatDate(suggestion.date)}.
+              Puedes posponer esta gestión para el {formatDate(suggestion.date)}.
             </strong>{" "}
-            Quedarías con <strong>{formatHours(suggestion.total_hours)} h</strong>{" "}
+            Quedarías con{" "}
+            <strong>{formatHours(suggestion.total_hours)} h</strong>{" "}
             planificadas, dentro del límite diario de{" "}
             <strong>{formatHours(suggestion.limit_hours)} h</strong>.
           </p>
         )}
         {!suggestion && suggestionMessage && (
           <div className="reschedule-guidance reschedule-guidance-warning">
-            <strong className="reschedule-guidance-title">{suggestionMessage}</strong>
+            <strong className="reschedule-guidance-title">
+              {suggestionMessage}
+            </strong>
             {task.eventDate && (
               <span>
                 No encontramos una fecha con capacidad suficiente desde mañana
@@ -98,40 +142,121 @@ export function RescheduleModal({
           </div>
         )}
 
-        <div className="custom-datepicker">
-          <div className="datepicker-header">
-            <button type="button" onClick={handlePrevMonth} className="icon-btn">
-              <ChevronLeft size={18} />
-            </button>
-            <div className="datepicker-selectors">
-              <span className="month-label">{monthNames[currentMonth.getMonth()]}</span>
-              <span className="year-label">{currentMonth.getFullYear()}</span>
+        <div className="postpone-modal-grid">
+          <div className="postpone-panel">
+            <h3 className="postpone-panel-title">1. ¿Para cuándo?</h3>
+
+            <div className="custom-datepicker postpone-datepicker">
+              <div className="datepicker-header">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  className="icon-btn"
+                  aria-label="Mes anterior"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <div className="datepicker-selectors">
+                  <span className="month-label">
+                    {MONTH_NAMES[currentMonth.getMonth()]}
+                  </span>
+                  <span className="year-label">
+                    {currentMonth.getFullYear()}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="icon-btn"
+                  aria-label="Mes siguiente"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              <div className="datepicker-grid">
+                {["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"].map((d) => (
+                  <span key={d} className="day-name">
+                    {d}
+                  </span>
+                ))}
+                {daysInMonth.map((item, index) => {
+                  const isPast = Boolean(
+                    item.dateString && item.dateString < today,
+                  );
+                  const isAfterEvent = Boolean(
+                    task.eventDate &&
+                      item.dateString &&
+                      item.dateString > task.eventDate,
+                  );
+                  const isDisabled = !item.day || isPast || isAfterEvent;
+                  const isSelected = item.dateString === selectedDate;
+                  const isToday = item.dateString === today;
+
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      disabled={isDisabled}
+                      className={`day-cell ${isSelected ? "selected" : ""} ${
+                        isToday && !isSelected ? "today-cell" : ""
+                      }`}
+                      onClick={() =>
+                        item.dateString && setSelectedDate(item.dateString)
+                      }
+                    >
+                      {item.day || ""}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <button type="button" onClick={handleNextMonth} className="icon-btn">
-              <ChevronRight size={18} />
-            </button>
           </div>
 
-          <div className="datepicker-grid">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-              <span key={d} className="day-name">{d}</span>
-            ))}
-            {daysInMonth.map((item, index) => (
-              <button
-                key={index}
-                type="button"
-                disabled={
-                  !item.day ||
-                  Boolean(task.eventDate && item.dateString > task.eventDate)
-                }
-                className={`day-cell ${
-                  item.dateString === selectedDate ? "selected" : ""
-                }`}
-                onClick={() => item.dateString && setSelectedDate(item.dateString)}
-              >
-                {item.day || ""}
-              </button>
-            ))}
+          <div className="postpone-panel">
+            <h3 className="postpone-panel-title">
+              2. Nota <span>(opcional)</span>
+            </h3>
+            <p className="postpone-panel-helper">
+              ¿Por qué la pospones? Así lo recordarás después.
+            </p>
+
+            <textarea
+              className="postpone-note-textarea"
+              maxLength={200}
+              rows={3}
+              placeholder="Ej. Esperando confirmación del salón"
+              value={note}
+              onChange={(event) => setNote(event.target.value.slice(0, 200))}
+            />
+
+            <div className="postpone-note-meta">
+              <span>La nota se verá en la tarjeta.</span>
+              <span>{note.length}/200</span>
+            </div>
+
+            <div className="postpone-reasons">
+              <span className="postpone-reasons-label">
+                O elige una razón frecuente:
+              </span>
+              <div className="postpone-reasons-chips">
+                {FREQUENT_REASONS.map((reason) => {
+                  const active = note.trim() === reason;
+                  return (
+                    <button
+                      key={reason}
+                      type="button"
+                      className={`postpone-reason-chip ${
+                        active ? "active" : ""
+                      }`}
+                      onClick={() => setNote(reason)}
+                    >
+                      {reason}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -142,10 +267,10 @@ export function RescheduleModal({
           <button
             type="button"
             className="btn-primary"
-            disabled={!selectedDate}
-            onClick={() => onConfirm(selectedDate)}
+            disabled={!selectedDate || selectedDate < today}
+            onClick={() => onConfirm(selectedDate, note)}
           >
-            Reprogramar
+            Posponer gestión
           </button>
         </div>
       </div>
