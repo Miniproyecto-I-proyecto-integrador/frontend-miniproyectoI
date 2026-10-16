@@ -1940,3 +1940,377 @@ body {
   min-height: auto;
   padding: 9px 14px;
 }
+
+/* Rediseño de tarjetas de Hoy y Modal de Posponer (US-09) */
+.today-task {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.task-vencidas {
+  background: #fff1f2;
+  border: 2px solid #f43f5e;
+}
+
+.task-hoy {
+  background: #dbeafe;
+  border: 2px solid #3b82f6;
+}
+
+.task-proximas {
+  background: #ffffff;
+  border: 1.5px solid #dbeafe;
+}
+
+.task-completadas {
+  background: #ffffff;
+  border: 1.5px solid #15803d;
+}
+
+.task-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-heading strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.task-completadas .task-heading strong {
+  color: #374151;
+  text-decoration: line-through;
+}
+
+.task-done-badge-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #15803d;
+  color: #ffffff;
+}
+
+.task-heading-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.task-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill-done {
+  margin-left: auto;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #15803d;
+}
+
+.pill-postponed {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  color: #854d0e;
+}
+
+.today-task-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.task-vencidas .today-task-due-date {
+  color: #9f1239;
+  font-weight: 700;
+}
+
+.task-hoy .today-task-due-date {
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.today-task-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  background: #fefce8;
+}
+
+.today-task-note-icon {
+  flex: none;
+  margin-top: 2px;
+  color: #92400e;
+}
+
+.today-task-note-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.today-task-note-label {
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.today-task-note-text {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.today-task-note-edit {
+  padding: 0;
+  margin-top: 2px;
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.today-task-note-edit:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.today-task-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.today-task-actions-single {
+  grid-template-columns: 1fr;
+}
+
+.task-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.task-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.task-action-done {
+  border: 1.5px solid var(--blue);
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.task-action-done:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.task-action-postpone {
+  border: 1.5px solid var(--blue);
+  background: #ffffff;
+  color: #1d4ed8;
+}
+
+.task-action-postpone:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.task-action-undo {
+  border: 1.5px solid #15803d;
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.task-action-undo:hover:not(:disabled) {
+  background: #f0fdf4;
+}
+
+/* Modal de Posponer Gestión (2 columnas) */
+.modal-card.postpone-modal {
+  max-width: 780px;
+  padding: 28px 32px;
+  background: #f8fafc;
+}
+
+.postpone-modal .modal-title-accent::after {
+  width: 260px;
+  max-width: 80%;
+}
+
+.postpone-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.postpone-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.postpone-panel-title {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.postpone-panel-title span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.postpone-panel-helper {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.postpone-datepicker {
+  margin-bottom: 0;
+  padding: 8px 4px 4px;
+  border: 0;
+  box-shadow: none;
+}
+
+.day-cell.today-cell {
+  border: 1.5px solid #3b82f6;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.postpone-note-textarea {
+  width: 100%;
+  min-height: 92px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  resize: none;
+  outline: none;
+}
+
+.postpone-note-textarea:focus {
+  border-color: var(--blue);
+}
+
+.postpone-note-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.postpone-reasons {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.postpone-reasons-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.postpone-reasons-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.postpone-reason-chip {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.postpone-reason-chip:hover {
+  background: #f3f4f6;
+}
+
+.postpone-reason-chip.active {
+  border-color: #3b82f6;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .modal-card.postpone-modal {
+    padding: 20px;
+  }
+
+  .postpone-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .today-task-actions {
+    grid-template-columns: 1fr;
+  }
+}
+

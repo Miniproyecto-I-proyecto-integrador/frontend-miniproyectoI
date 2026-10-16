@@ -1,9 +1,13 @@
+import { API_URL } from "../../config";
 import { authServices } from "./authServices";
 
-const API_URL = (
-  import.meta.env.VITE_API_URL ||
-  "https://backend-miniproyectoi.onrender.com/api"
-).replace(/\/+$/, "");
+const buildApiUrl = (path) => {
+  const base = API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+  const normalizedPath = path.startsWith("/api/")
+    ? path
+    : `/api${path.startsWith("/") ? path : `/${path}`}`;
+  return `${base}${normalizedPath}`;
+};
 
 const request = async (path, options = {}, canRefresh = true) => {
   const token = authServices.getAccessToken();
@@ -17,7 +21,7 @@ const request = async (path, options = {}, canRefresh = true) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     ...options,
     method: options.method || "GET",
     headers,
@@ -99,6 +103,12 @@ export const eventServices = {
       body: JSON.stringify(data),
     }),
 
+  patchSubtask: (id, data) =>
+    request(`/subtareas/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   rescheduleSubtask: (id, dueDate) =>
     request(`/subtareas/${id}/`, {
       method: "PATCH",
@@ -123,6 +133,23 @@ export const eventServices = {
     return request(`/subtareas/${id}/resolver-reducir/?${query}`, {
       method: "PATCH",
       body: JSON.stringify({ estimated_hours: estimatedHours }),
+    });
+  },
+
+  // US-09: PATCH /api/subtareas/{id}/registrar-ejecucion/
+  registerExecution: (id, { status, note, due_date } = {}) => {
+    const payload = { status };
+    if (status === "postponed") {
+      payload.note = (note ?? "").trim();
+      if (due_date) {
+        payload.due_date = due_date;
+      }
+    } else if (note !== undefined && note !== "") {
+      payload.note = note.trim();
+    }
+    return request(`/subtareas/${id}/registrar-ejecucion/`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
     });
   },
 
