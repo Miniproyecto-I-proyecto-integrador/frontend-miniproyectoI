@@ -3,11 +3,43 @@ import { Settings, X, Info, XCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import SuccessModal from './SuccessModal';
 import DailyLimitConflictModal from './DailyLimitConflictModal';
-import { getDailyLimit, updateDailyLimit } from '../../api/eventServices';
+import { eventServices, getDailyLimit, updateDailyLimit } from '../../api/eventServices';
 import { getToday } from '../../utils/hoy';
+
+const findOverloadedDaysFromEvents = (events, proposedLimit, todayStr) => {
+  const daysMap = new Map();
+
+  (Array.isArray(events) ? events : []).forEach((event) => {
+    (event.subtasks || []).forEach((task) => {
+      const isActive = task.status === 'pending' || task.status === 'in_progress';
+      if (!isActive || !task.due_date || task.due_date < todayStr) return;
+
+      const hours = Number(task.estimated_hours) || 0;
+      if (!daysMap.has(task.due_date)) {
+        daysMap.set(task.due_date, {
+          date: task.due_date,
+          total_hours: 0,
+          subtasks: [],
+        });
+      }
+      const entry = daysMap.get(task.due_date);
+      entry.total_hours = Number((entry.total_hours + hours).toFixed(2));
+      entry.subtasks.push({ id: task.id, name: task.name });
+    });
+  });
+
+  return Array.from(daysMap.values())
+    .filter((day) => day.total_hours > proposedLimit)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((day) => ({
+      ...day,
+      excess_hours: Number((day.total_hours - proposedLimit).toFixed(2)),
+    }));
+};
 
 export default function DailyLimitPopover({ isOpen, onClose }) {
   const [limit, setLimit] = useState('6');
+  const [savedLimit, setSavedLimit] = useState('6');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
@@ -21,11 +53,16 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
     getDailyLimit(getToday())
       .then((data) => {
         if (active && data?.daily_hours_limit !== undefined) {
-          setLimit(String(data.daily_hours_limit));
+          const current = String(data.daily_hours_limit);
+          setLimit(current);
+          setSavedLimit(current);
         }
       })
       .catch(() => {
-        if (active) setLimit('6');
+        if (active) {
+          setLimit('6');
+          setSavedLimit('6');
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -62,16 +99,47 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
 
     try {
       const todayStr = getToday();
+      const events = await eventServices.getEvents();
+      const overloadedDays = findOverloadedDaysFromEvents(events, numValue, todayStr);
+
+      if (overloadedDays.length > 0) {
+        setLimit(savedLimit);
+        onClose();
+        setConflictReport({
+          daily_hours_limit: numValue,
+          overloaded_days: overloadedDays,
+        });
+        return;
+      }
+
       const result = await updateDailyLimit(numValue, todayStr);
-      window.dispatchEvent(new Event('daily-limit-updated'));
-      onClose();
 
       if (result?.has_conflicts && result.overloaded_days?.length) {
+        if (Number(savedLimit) !== numValue) {
+          await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
+        }
+        setLimit(savedLimit);
+        onClose();
         setConflictReport(result);
-      } else {
-        setShowSuccessModal(true);
+        return;
       }
+
+      setSavedLimit(String(numValue));
+      window.dispatchEvent(new Event('daily-limit-updated'));
+      onClose();
+      setShowSuccessModal(true);
     } catch (err) {
+      const conflictList = err?.fields?.overloaded_days || err?.overloaded_days;
+      if (Array.isArray(conflictList) && conflictList.length > 0) {
+        setLimit(savedLimit);
+        onClose();
+        setConflictReport({
+          daily_hours_limit: numValue,
+          overloaded_days: conflictList,
+        });
+        return;
+      }
+
       const fieldError = err?.fields?.daily_hours_limit;
       const backendMessage = Array.isArray(fieldError)
         ? String(fieldError[0])

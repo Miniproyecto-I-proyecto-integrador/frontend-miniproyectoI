@@ -27,7 +27,9 @@ export default function DailyLimitConflictModal({
         aria-labelledby="daily-limit-conflict-title"
       >
         <CircleAlert className="daily-limit-conflict-icon" size={30} />
-        <h2 id="daily-limit-conflict-title">El límite se guardó con conflictos</h2>
+        <h2 id="daily-limit-conflict-title">
+          No se puede guardar el nuevo límite porque hay conflictos
+        </h2>
         <p>
           El nuevo límite es de <strong>{formatHours(limit)} h por día</strong>.
           Estos días ya tienen más horas asignadas:
@@ -48,10 +50,6 @@ export default function DailyLimitConflictModal({
             </li>
           ))}
         </ul>
-        <p className="daily-limit-conflict-note">
-          El límite quedó actualizado. Revisa esos días y reprograma las
-          gestiones si necesitas resolver la sobrecarga.
-        </p>
         <button className="button button-primary" onClick={onAccept}>
           Entendido
         </button>

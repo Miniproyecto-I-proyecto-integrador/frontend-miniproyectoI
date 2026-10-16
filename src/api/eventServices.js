@@ -147,7 +147,7 @@ export const eventServices = {
     } else if (note !== undefined && note !== "") {
       payload.note = note.trim();
     }
-    return request(`/subtareas/${id}/registrar-ejecucion/`, {
+    return request(`/api/subtareas/${id}/registrar-ejecucion/`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
