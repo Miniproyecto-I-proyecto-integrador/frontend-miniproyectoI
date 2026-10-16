@@ -3,39 +3,8 @@ import { Settings, X, Info, XCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import SuccessModal from './SuccessModal';
 import DailyLimitConflictModal from './DailyLimitConflictModal';
-import { eventServices, getDailyLimit, updateDailyLimit } from '../../api/eventServices';
+import { getDailyLimit, updateDailyLimit } from '../../api/eventServices';
 import { getToday } from '../../utils/hoy';
-
-const findOverloadedDaysFromEvents = (events, proposedLimit, todayStr) => {
-  const daysMap = new Map();
-
-  (Array.isArray(events) ? events : []).forEach((event) => {
-    (event.subtasks || []).forEach((task) => {
-      const isActive = task.status === 'pending' || task.status === 'in_progress';
-      if (!isActive || !task.due_date || task.due_date < todayStr) return;
-
-      const hours = Number(task.estimated_hours) || 0;
-      if (!daysMap.has(task.due_date)) {
-        daysMap.set(task.due_date, {
-          date: task.due_date,
-          total_hours: 0,
-          subtasks: [],
-        });
-      }
-      const entry = daysMap.get(task.due_date);
-      entry.total_hours = Number((entry.total_hours + hours).toFixed(2));
-      entry.subtasks.push({ id: task.id, name: task.name });
-    });
-  });
-
-  return Array.from(daysMap.values())
-    .filter((day) => day.total_hours > proposedLimit)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((day) => ({
-      ...day,
-      excess_hours: Number((day.total_hours - proposedLimit).toFixed(2)),
-    }));
-};
 
 export default function DailyLimitPopover({ isOpen, onClose }) {
   const [limit, setLimit] = useState('6');
@@ -97,27 +66,13 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
     setSaving(true);
     setStatus({ type: 'idle', message: '' });
 
+    const todayStr = getToday();
+
     try {
-      const todayStr = getToday();
-      const events = await eventServices.getEvents();
-      const overloadedDays = findOverloadedDaysFromEvents(events, numValue, todayStr);
-
-      if (overloadedDays.length > 0) {
-        setLimit(savedLimit);
-        onClose();
-        setConflictReport({
-          daily_hours_limit: numValue,
-          overloaded_days: overloadedDays,
-        });
-        return;
-      }
-
       const result = await updateDailyLimit(numValue, todayStr);
 
       if (result?.has_conflicts && result.overloaded_days?.length) {
-        if (Number(savedLimit) !== numValue) {
-          await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
-        }
+        await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
         setLimit(savedLimit);
         onClose();
         setConflictReport(result);
@@ -131,6 +86,7 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
     } catch (err) {
       const conflictList = err?.fields?.overloaded_days || err?.overloaded_days;
       if (Array.isArray(conflictList) && conflictList.length > 0) {
+        await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
         setLimit(savedLimit);
         onClose();
         setConflictReport({
@@ -140,13 +96,9 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
         return;
       }
 
-      const fieldError = err?.fields?.daily_hours_limit;
-      const backendMessage = Array.isArray(fieldError)
-        ? String(fieldError[0])
-        : fieldError;
       setStatus({
         type: 'error',
-        message: backendMessage || err?.message || 'Ocurrió un error al guardar el límite',
+        message: 'El límite diario no se puede cambiar por un número menor a las horas ya registradas.',
       });
     } finally {
       setSaving(false);
