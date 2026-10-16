@@ -137,7 +137,7 @@ export const eventServices = {
   },
 
   // US-09: PATCH /api/subtareas/{id}/registrar-ejecucion/
-  registerExecution: (id, { status, note, due_date } = {}) => {
+  registerExecution: async (id, { status, note, due_date } = {}) => {
     const payload = { status };
     if (status === "postponed") {
       payload.note = (note ?? "").trim();
@@ -147,10 +147,21 @@ export const eventServices = {
     } else if (note !== undefined && note !== "") {
       payload.note = note.trim();
     }
-    return request(`/api/subtareas/${id}/registrar-ejecucion/`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
+
+    try {
+      return await request(`/api/subtareas/${id}/registrar-ejecucion/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      if (error?.status === 404) {
+        return request(`/api/subtareas/${id}/`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+      }
+      throw error;
+    }
   },
 
   deleteSubtask: (id) =>
