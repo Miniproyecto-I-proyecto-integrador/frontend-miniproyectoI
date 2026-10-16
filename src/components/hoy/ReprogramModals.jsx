@@ -284,6 +284,7 @@ export function OverloadConflictModal({
   onCancel,
   onReduceHours,
   onMoveOtherDay,
+  cancelLabel = "Cancelar",
 }) {
   const projectedHours = Number(conflict?.total_hours) || 0;
   const limitHours = Number(conflict?.limit_hours) || 0;
@@ -301,23 +302,25 @@ export function OverloadConflictModal({
 
         <div className="modal-actions conflict-actions">
           <button type="button" className="btn-outline-danger" onClick={onCancel}>
-            Cancelar
+            {cancelLabel}
           </button>
-          {(!availableOptions.length ||
-            availableOptions.includes("reduce_hours")) && (
-            <button type="button" className="btn-dark" onClick={onReduceHours}>
-              Reducir horas
-            </button>
-          )}
-          {(!availableOptions.length || availableOptions.includes("move")) && (
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={onMoveOtherDay}
-            >
-              Mover a otro día
-            </button>
-          )}
+          {onReduceHours &&
+            (!availableOptions.length ||
+              availableOptions.includes("reduce_hours")) && (
+              <button type="button" className="btn-dark" onClick={onReduceHours}>
+                Reducir horas
+              </button>
+            )}
+          {onMoveOtherDay &&
+            (!availableOptions.length || availableOptions.includes("move")) && (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={onMoveOtherDay}
+              >
+                Mover a otro día
+              </button>
+            )}
         </div>
       </div>
     </div>

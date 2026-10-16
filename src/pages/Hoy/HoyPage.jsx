@@ -137,15 +137,15 @@ export default function HoyPage() {
     window.dispatchEvent(new Event("tasks-updated"));
   };
 
-  const runAction = async (task, action, errorMessage) => {
+  const runAction = async (task, action, errorMessage, onError) => {
     setBusyId(task.id);
     setActionError("");
     try {
       await action();
       await load(true);
       notifyTasksUpdated();
-    } catch {
-      setActionError(errorMessage);
+    } catch (error) {
+      if (!onError?.(error)) setActionError(errorMessage);
     } finally {
       setBusyId(null);
     }
@@ -161,6 +161,17 @@ export default function HoyPage() {
         return eventServices.registerExecution(task.id, { status: "done" });
       },
       "No pudimos actualizar la gestión, por favor reintenta",
+      (error) => {
+        if (task.status !== "done" || !error?.fields?.conflict) return false;
+
+        setModal({
+          type: "overload",
+          mode: "undo",
+          task,
+          conflict: error.fields.conflict,
+        });
+        return true;
+      },
     );
 
   const confirmDelete = () => {
@@ -486,16 +497,22 @@ export default function HoyPage() {
         <OverloadConflictModal
           conflict={modal.conflict}
           onCancel={() => setModal(null)}
-          onReduceHours={() =>
-            setModal({
-              type: "reduceHours",
-              task: modal.task,
-              targetDate: modal.targetDate,
-              conflict: modal.conflict,
-              note: modal.note,
-            })
+          cancelLabel={modal.mode === "undo" ? "Entendido" : "Cancelar"}
+          onReduceHours={
+            modal.mode === "undo"
+              ? undefined
+              : () =>
+                  setModal({
+                    type: "reduceHours",
+                    task: modal.task,
+                    targetDate: modal.targetDate,
+                    conflict: modal.conflict,
+                    note: modal.note,
+                  })
           }
-          onMoveOtherDay={openMoveDatePicker}
+          onMoveOtherDay={
+            modal.mode === "undo" ? undefined : openMoveDatePicker
+          }
         />
       )}
 
