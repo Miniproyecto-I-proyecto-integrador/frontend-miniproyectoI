@@ -1,4 +1,4 @@
-import { Calendar, ChevronDown, Clock, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Clock, Pencil, Trash2 } from "lucide-react";
 
 const statusLabels = {
   pending: "Pendiente",
@@ -20,15 +20,10 @@ export default function SubtaskRow({
           <h3>{task.name}</h3>
           {task.category && <span className="badge">{task.category}</span>}
         </div>
-        {/* Provisional: todavía no cambia el estado */}
         {showStatus && (
-          <button
-            type="button"
-            className={`status-button status-${task.status}`}
-            aria-label="Cambiar estado de la subtarea"
-          >
-            {statusLabels[task.status] || task.status} <ChevronDown size={14} />
-          </button>
+          <span className={`status-button status-${task.status}`}>
+            {statusLabels[task.status] || task.status}
+          </span>
         )}
       </div>
 

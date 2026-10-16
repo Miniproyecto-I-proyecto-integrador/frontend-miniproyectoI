@@ -8,6 +8,7 @@ import { getToday } from '../../utils/hoy';
 
 export default function DailyLimitPopover({ isOpen, onClose }) {
   const [limit, setLimit] = useState('6');
+  const [savedLimit, setSavedLimit] = useState('6');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState({ type: 'idle', message: '' });
@@ -21,11 +22,16 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
     getDailyLimit(getToday())
       .then((data) => {
         if (active && data?.daily_hours_limit !== undefined) {
-          setLimit(String(data.daily_hours_limit));
+          const current = String(data.daily_hours_limit);
+          setLimit(current);
+          setSavedLimit(current);
         }
       })
       .catch(() => {
-        if (active) setLimit('6');
+        if (active) {
+          setLimit('6');
+          setSavedLimit('6');
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -60,25 +66,39 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
     setSaving(true);
     setStatus({ type: 'idle', message: '' });
 
+    const todayStr = getToday();
+
     try {
-      const todayStr = getToday();
       const result = await updateDailyLimit(numValue, todayStr);
-      window.dispatchEvent(new Event('daily-limit-updated'));
-      onClose();
 
       if (result?.has_conflicts && result.overloaded_days?.length) {
+        await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
+        setLimit(savedLimit);
+        onClose();
         setConflictReport(result);
-      } else {
-        setShowSuccessModal(true);
+        return;
       }
+
+      setSavedLimit(String(numValue));
+      window.dispatchEvent(new Event('daily-limit-updated'));
+      onClose();
+      setShowSuccessModal(true);
     } catch (err) {
-      const fieldError = err?.fields?.daily_hours_limit;
-      const backendMessage = Array.isArray(fieldError)
-        ? String(fieldError[0])
-        : fieldError;
+      const conflictList = err?.fields?.overloaded_days || err?.overloaded_days;
+      if (Array.isArray(conflictList) && conflictList.length > 0) {
+        await updateDailyLimit(Number(savedLimit), todayStr).catch(() => {});
+        setLimit(savedLimit);
+        onClose();
+        setConflictReport({
+          daily_hours_limit: numValue,
+          overloaded_days: conflictList,
+        });
+        return;
+      }
+
       setStatus({
         type: 'error',
-        message: backendMessage || err?.message || 'Ocurrió un error al guardar el límite',
+        message: 'El límite diario no se puede cambiar por un número menor a las horas ya registradas.',
       });
     } finally {
       setSaving(false);
