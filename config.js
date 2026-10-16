@@ -4,4 +4,3 @@ export const APP_NAME = "Logística";
 export const API_URL =
   import.meta.env.VITE_API_URL || 'https://backend-miniproyectoi.onrender.com';
 
-
