@@ -2621,4 +2621,518 @@ body {
   }
 }
 
+.daily-limit-resolution-backdrop {
+  z-index: 10000;
+}
 
+.daily-limit-resolution-modal {
+  width: min(100%, 1100px);
+  max-height: min(94vh, 1050px);
+  overflow: auto;
+  padding: clamp(18px, 3vw, 34px);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 60px #0004;
+}
+
+.daily-limit-resolution-heading {
+  margin: 0 auto 22px;
+  max-width: 700px;
+  text-align: center;
+}
+
+.daily-limit-resolution-heading > svg {
+  color: #dc2626;
+}
+
+.daily-limit-resolution-modal.is-resolved
+.daily-limit-resolution-heading > svg {
+  color: #15803d;
+}
+
+.daily-limit-resolution-heading h2 {
+  margin: 8px 0;
+  font-size: clamp(20px, 2.4vw, 26px);
+}
+
+.daily-limit-resolution-heading p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.daily-limit-resolution-content {
+  display: grid;
+  gap: 16px;
+}
+
+.daily-limit-resolution-day {
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  background: #fef2f2;
+}
+
+.daily-limit-resolution-day:has(.daily-limit-resolution-badge.is-within) {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.daily-limit-resolution-day-top,
+.daily-limit-resolution-day-top > strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-limit-resolution-day-top {
+  justify-content: space-between;
+}
+
+.daily-limit-resolution-day-top > strong {
+  text-transform: capitalize;
+}
+
+.daily-limit-resolution-badge {
+  padding: 5px 11px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.daily-limit-resolution-badge.is-over {
+  border-color: #fca5a5;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.daily-limit-resolution-badge.is-within {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.daily-limit-resolution-day h3 {
+  margin: 12px 0;
+  color: #991b1b;
+  font-size: 18px;
+}
+
+.daily-limit-resolution-day:has(.daily-limit-resolution-badge.is-within) h3 {
+  color: #166534;
+}
+
+.daily-limit-resolution-meter {
+  position: relative;
+  height: 14px;
+  overflow: visible;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.daily-limit-resolution-meter-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 180ms ease;
+}
+
+.daily-limit-resolution-meter-fill.is-base {
+  background: #2563eb;
+}
+
+.daily-limit-resolution-meter-fill.is-excess {
+  border-radius: 0 999px 999px 0;
+  background: #dc2626;
+}
+
+.daily-limit-resolution-meter-fill.is-within {
+  background: #15803d;
+}
+
+.daily-limit-resolution-meter-limit {
+  position: absolute;
+  top: -5px;
+  height: 24px;
+  border-left: 2px solid #111827;
+}
+
+.daily-limit-resolution-meter-limit-label {
+  position: absolute;
+  top: -25px;
+  transform: translateX(-50%);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.daily-limit-resolution-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.daily-limit-resolution-tasks-heading {
+  display: grid;
+  gap: 3px;
+  margin: 18px 0 10px;
+}
+
+.daily-limit-resolution-tasks-heading span,
+.daily-limit-resolution-task-info span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.daily-limit-resolution-task-list {
+  display: grid;
+  gap: 10px;
+}
+
+.daily-limit-resolution-task {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.daily-limit-resolution-task.has-change {
+  border-color: #7da2ff;
+  background: #f8fbff;
+}
+
+.daily-limit-resolution-task-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.daily-limit-resolution-task-info {
+  display: grid;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.daily-limit-resolution-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.daily-limit-resolution-choice {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  background: #fff;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.daily-limit-resolution-choice:has(input:checked) {
+  border-color: #4b7bff;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.daily-limit-resolution-choice:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.daily-limit-resolution-action-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 0 0;
+  border-top: 1px solid #dbeafe;
+}
+
+.daily-limit-resolution-suggestions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.daily-limit-resolution-suggestion {
+  position: relative;
+  display: grid;
+  min-height: 92px;
+  align-content: start;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.daily-limit-resolution-suggestion.is-selected {
+  border: 2px solid #3b73ff;
+  padding: 9px;
+}
+
+.daily-limit-resolution-suggestion > span,
+.daily-limit-resolution-suggestion > b {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.daily-limit-resolution-suggestion > b {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-suggestion .suggested-label {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-calendar {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-calendar input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.daily-limit-resolution-calendar:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.daily-limit-resolution-reducer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-limit-resolution-reducer button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.daily-limit-resolution-reducer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.daily-limit-resolution-reducer output {
+  min-width: 78px;
+  padding: 9px 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.daily-limit-resolution-reduction {
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.daily-limit-resolution-reduction strong {
+  color: #15803d;
+}
+
+.daily-limit-resolution-minimum {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.daily-limit-resolution-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #a16207;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.daily-limit-resolution-warning svg {
+  flex: none;
+}
+
+.daily-limit-resolution-affected,
+.daily-limit-resolution-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #f3f4f6;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.daily-limit-resolution-footer {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.daily-limit-resolution-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.daily-limit-resolution-footer button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-footer .daily-limit-resolution-save {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.daily-limit-resolution-footer .daily-limit-resolution-save:disabled {
+  border-color: #cbd5e1;
+  background: #cbd5e1;
+  color: #475569;
+  cursor: not-allowed;
+}
+
+.daily-limit-resolution-footer .daily-limit-resolution-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.daily-limit-resolution-remaining {
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.daily-limit-resolution-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.daily-limit-resolution-error button {
+  min-height: 44px;
+  color: #1d4ed8;
+}
+
+@media (max-width: 760px) {
+  .daily-limit-resolution-backdrop {
+    padding: 8px;
+  }
+
+  .daily-limit-resolution-modal {
+    max-height: 98vh;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .daily-limit-resolution-task-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .daily-limit-resolution-radio-group {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .daily-limit-resolution-choice {
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  .daily-limit-resolution-suggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-limit-resolution-footer-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .daily-limit-resolution-footer-actions > button {
+    width: 100%;
+  }
+
+  .daily-limit-resolution-remaining {
+    text-align: center;
+  }
+}
