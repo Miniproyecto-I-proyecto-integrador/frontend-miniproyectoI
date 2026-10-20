@@ -184,3 +184,24 @@ export async function updateDailyLimit(dailyHoursLimit, today) {
     body: JSON.stringify({ daily_hours_limit: Number(dailyHoursLimit) }),
   });
 }
+
+export async function previewDailyLimitChange(dailyHoursLimit, today) {
+  return request("/configuracion/limite-diario/previsualizar/", {
+    method: "POST",
+    body: JSON.stringify({
+      daily_hours_limit: Number(dailyHoursLimit),
+      today,
+    }),
+  });
+}
+
+export async function applyDailyLimitChange(dailyHoursLimit, today, changes) {
+  return request("/configuracion/limite-diario/aplicar/", {
+    method: "POST",
+    body: JSON.stringify({
+      daily_hours_limit: Number(dailyHoursLimit),
+      today,
+      changes,
+    }),
+  });
+}

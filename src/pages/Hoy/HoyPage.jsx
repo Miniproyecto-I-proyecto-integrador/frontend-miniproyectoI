@@ -104,8 +104,15 @@ export default function HoyPage() {
     const timer = setTimeout(() => {
       void load();
     }, 0);
+    const refreshTasks = () => {
+      void load(true);
+    };
+    window.addEventListener("tasks-updated", refreshTasks);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("tasks-updated", refreshTasks);
+    };
   }, [load]);
 
   const allTasks = useMemo(() => flattenTasks(events), [events]);
