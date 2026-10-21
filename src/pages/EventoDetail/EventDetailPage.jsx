@@ -122,8 +122,8 @@ export default function EventDetailPage() {
     });
   };
 
-  const showOverload = (task, targetDate, conflict, note = "") => {
-    setModal({ type: "overload", task, targetDate, conflict, note });
+  const showOverload = (task, targetDate, conflict, note = "", mode) => {
+    setModal({ type: "overload", task, targetDate, conflict, note, mode });
   };
 
   const taskWithEvent = (task) => ({
@@ -132,23 +132,31 @@ export default function EventDetailPage() {
     eventDate: event.date_event,
   });
 
-  const completeTask = async (task) => {
+  const toggleTaskDone = async (task) => {
     setBusyId(task.id);
     try {
-      await eventServices.registerExecution(task.id, { status: "done" });
+      if (task.status === "done") {
+        await eventServices.patchSubtask(task.id, { status: "pending" });
+      } else {
+        await eventServices.registerExecution(task.id, { status: "done" });
+      }
       await load(true);
       notifyTasksUpdated();
-      setSuccess({
-        title: "Gestión completada",
-        message: "La subtarea se marcó como hecha correctamente.",
-        redirect: false,
-      });
+      if (task.status !== "done") {
+        setSuccess({
+          title: "Gestión completada",
+          message: "La subtarea se marcó como hecha correctamente.",
+          redirect: false,
+        });
+      }
     } catch (actionError) {
       if (actionError?.fields?.conflict) {
         showOverload(
           taskWithEvent(task),
           task.due_date,
           actionError.fields.conflict,
+          "",
+          task.status === "done" ? "undo" : undefined,
         );
       } else {
         showActionError(actionError);
@@ -410,7 +418,7 @@ export default function EventDetailPage() {
             busy={busyId === task.id}
             onEdit={(item) => setModal({ type: "task-form", task: item })}
             onDelete={(item) => setModal({ type: "task-delete", task: item })}
-            onToggleDone={completeTask}
+            onToggleDone={toggleTaskDone}
             onReschedule={openReschedule}
           />
         ))}
@@ -463,16 +471,22 @@ export default function EventDetailPage() {
         <OverloadConflictModal
           conflict={modal.conflict}
           onCancel={() => setModal(null)}
-          onReduceHours={() =>
-            setModal({
-              type: "reduce-hours",
-              task: modal.task,
-              targetDate: modal.targetDate,
-              conflict: modal.conflict,
-              note: modal.note,
-            })
+          cancelLabel={modal.mode === "undo" ? "Entendido" : "Cancelar"}
+          onReduceHours={
+            modal.mode === "undo"
+              ? undefined
+              : () =>
+                  setModal({
+                    type: "reduce-hours",
+                    task: modal.task,
+                    targetDate: modal.targetDate,
+                    conflict: modal.conflict,
+                    note: modal.note,
+                  })
           }
-          onMoveOtherDay={openMoveDatePicker}
+          onMoveOtherDay={
+            modal.mode === "undo" ? undefined : openMoveDatePicker
+          }
         />
       )}
       {modal?.type === "reduce-hours" && (

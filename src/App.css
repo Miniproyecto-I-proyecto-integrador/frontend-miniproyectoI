@@ -1303,6 +1303,12 @@ body {
   gap: 8px;
 }
 
+.subtask-undo-action {
+  grid-template-columns: 1fr;
+  width: min(100%, 132px);
+  margin-top: 16px;
+}
+
 .subtask-execution-actions .task-action-btn {
   min-width: 0;
   min-height: 38px;

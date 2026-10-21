@@ -2,6 +2,7 @@ import {
   Calendar,
   Clock,
   Pencil,
+  Undo2,
   Trash2,
 } from "lucide-react";
 
@@ -56,6 +57,19 @@ export default function SubtaskRow({
           )}
         </div>
         <div className="subtask-actions-footer">
+          {done && onToggleDone && (
+            <div className="subtask-execution-actions subtask-undo-action">
+              <button
+                type="button"
+                className="task-action-btn task-action-undo"
+                disabled={busy}
+                onClick={() => onToggleDone(task)}
+              >
+                <Undo2 size={15} />
+                <span>Deshacer</span>
+              </button>
+            </div>
+          )}
           {!done && (onToggleDone || onReschedule) && (
             <div className="subtask-execution-actions">
               {onToggleDone && (
