@@ -1033,6 +1033,7 @@ body {
 }
 .task-grid {
   display: grid;
+  align-items: start;
   width: 100%;
   margin: 0;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
