@@ -11,15 +11,24 @@ import SubtaskModal from "../../components/events/SubtaskModal";
 import SubtaskRow from "../../components/events/SubtaskRow";
 import EventEditModal from "../../components/events/EventEditModal";
 import SuccessModal from "../../components/common/SuccessModal";
+import {
+  ActionErrorModal,
+  OverloadConflictModal,
+  ReduceHoursModal,
+  RescheduleModal,
+} from "../../components/hoy/ReprogramModals";
+import { getToday } from "../../utils/hoy";
 
 export default function EventDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const today = getToday();
   const [success, setSuccess] = useState(null);
   const [event, setEvent] = useState(null);
   const [state, setState] = useState("loading");
   const [modal, setModal] = useState(null);
   const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(
     async (silent = false) => {
@@ -96,6 +105,191 @@ export default function EventDetailPage() {
       });
     } catch (deleteError) {
       setError(deleteError.message);
+    }
+  };
+
+  const notifyTasksUpdated = () => {
+    window.dispatchEvent(new Event("tasks-updated"));
+  };
+
+  const showActionError = (actionError) => {
+    setModal({
+      type: "action-error",
+      title: "Error al actualizar",
+      message:
+        actionError?.message ||
+        "Ha ocurrido un error al intentar actualizar la subtarea",
+    });
+  };
+
+  const showOverload = (task, targetDate, conflict, note = "") => {
+    setModal({ type: "overload", task, targetDate, conflict, note });
+  };
+
+  const taskWithEvent = (task) => ({
+    ...task,
+    eventName: event.name,
+    eventDate: event.date_event,
+  });
+
+  const completeTask = async (task) => {
+    setBusyId(task.id);
+    try {
+      await eventServices.registerExecution(task.id, { status: "done" });
+      await load(true);
+      notifyTasksUpdated();
+      setSuccess({
+        title: "Gestión completada",
+        message: "La subtarea se marcó como hecha correctamente.",
+        redirect: false,
+      });
+    } catch (actionError) {
+      if (actionError?.fields?.conflict) {
+        showOverload(
+          taskWithEvent(task),
+          task.due_date,
+          actionError.fields.conflict,
+        );
+      } else {
+        showActionError(actionError);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openReschedule = (task) => {
+    setModal({ type: "reschedule", task: taskWithEvent(task) });
+  };
+
+  const handleSelectDate = async (targetDate, note = "") => {
+    const { task } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      await eventServices.registerExecution(task.id, {
+        status: "postponed",
+        note,
+        due_date: targetDate,
+      });
+      await load(true);
+      notifyTasksUpdated();
+      setSuccess({
+        title: "Gestión pospuesta",
+        message: "La fecha y la nota de la subtarea se actualizaron correctamente.",
+        redirect: false,
+      });
+    } catch (actionError) {
+      if (actionError?.fields?.conflict) {
+        showOverload(task, targetDate, actionError.fields.conflict, note);
+      } else {
+        showActionError(actionError);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openMoveDatePicker = async () => {
+    const { task, note } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      const result = await eventServices.suggestSubtaskDay(task.id, today);
+      setModal({
+        type: "reschedule",
+        task,
+        note,
+        resolution: "move",
+        suggestion: result?.suggestion || null,
+        suggestionMessage: result?.suggestion
+          ? ""
+          : result?.message ||
+            "No encontramos un día con capacidad suficiente antes de la fecha del evento.",
+      });
+    } catch (actionError) {
+      showActionError(actionError);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const confirmReschedule = async (targetDate, note = "") => {
+    const { task, resolution } = modal;
+    if (resolution !== "move") {
+      await handleSelectDate(targetDate, note);
+      return;
+    }
+
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      const result = await eventServices.moveSubtask(
+        task.id,
+        targetDate,
+        today,
+      );
+      if (!result.conflict_resolved) {
+        showOverload(task, targetDate, result.conflict, note);
+        return;
+      }
+      await eventServices.registerExecution(task.id, {
+        status: "postponed",
+        note,
+        due_date: targetDate,
+      });
+      await load(true);
+      notifyTasksUpdated();
+      setSuccess({
+        title: "Gestión pospuesta",
+        message: "La fecha y la nota de la subtarea se actualizaron correctamente.",
+        redirect: false,
+      });
+    } catch (actionError) {
+      if (actionError?.fields?.conflict) {
+        showOverload(task, targetDate, actionError.fields.conflict, note);
+      } else {
+        showActionError(actionError);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const reduceHoursAndReschedule = async (newHours) => {
+    const { task, targetDate, note } = modal;
+    setModal(null);
+    setBusyId(task.id);
+    try {
+      const result = await eventServices.reduceSubtaskHours(
+        task.id,
+        Number(newHours),
+        today,
+      );
+      if (!result.conflict_resolved) {
+        showOverload(task, targetDate, result.conflict, note);
+        return;
+      }
+      await eventServices.registerExecution(task.id, {
+        status: "postponed",
+        note,
+        due_date: targetDate,
+      });
+      await load(true);
+      notifyTasksUpdated();
+      setSuccess({
+        title: "Gestión pospuesta",
+        message: "Se actualizaron las horas estimadas y se pospuso la subtarea.",
+        redirect: false,
+      });
+    } catch (actionError) {
+      if (actionError?.fields?.conflict) {
+        showOverload(task, targetDate, actionError.fields.conflict, note);
+      } else {
+        showActionError(actionError);
+      }
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -213,8 +407,11 @@ export default function EventDetailPage() {
           <SubtaskRow
             key={task.id}
             task={task}
+            busy={busyId === task.id}
             onEdit={(item) => setModal({ type: "task-form", task: item })}
             onDelete={(item) => setModal({ type: "task-delete", task: item })}
+            onToggleDone={completeTask}
+            onReschedule={openReschedule}
           />
         ))}
       </section>
@@ -249,6 +446,48 @@ export default function EventDetailPage() {
           message="También se eliminarán sus subtareas logísticas."
           onCancel={() => setModal(null)}
           onConfirm={removeEvent}
+        />
+      )}
+      {modal?.type === "reschedule" && (
+        <RescheduleModal
+          task={modal.task}
+          initialDate={modal.suggestion?.date || ""}
+          initialNote={modal.note}
+          suggestion={modal.suggestion}
+          suggestionMessage={modal.suggestionMessage}
+          onClose={() => setModal(null)}
+          onConfirm={confirmReschedule}
+        />
+      )}
+      {modal?.type === "overload" && (
+        <OverloadConflictModal
+          conflict={modal.conflict}
+          onCancel={() => setModal(null)}
+          onReduceHours={() =>
+            setModal({
+              type: "reduce-hours",
+              task: modal.task,
+              targetDate: modal.targetDate,
+              conflict: modal.conflict,
+              note: modal.note,
+            })
+          }
+          onMoveOtherDay={openMoveDatePicker}
+        />
+      )}
+      {modal?.type === "reduce-hours" && (
+        <ReduceHoursModal
+          task={modal.task}
+          conflict={modal.conflict}
+          onClose={() => setModal(null)}
+          onConfirm={reduceHoursAndReschedule}
+        />
+      )}
+      {modal?.type === "action-error" && (
+        <ActionErrorModal
+          title={modal.title}
+          message={modal.message}
+          onClose={() => setModal(null)}
         />
       )}
       {success && (
