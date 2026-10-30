@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   CalendarDays,
@@ -23,6 +23,12 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [showLimitPopover, setShowLimitPopover] = useState(false);
+
+  useEffect(() => {
+    const openLimit = () => setShowLimitPopover(true);
+    window.addEventListener("open-daily-limit", openLimit);
+    return () => window.removeEventListener("open-daily-limit", openLimit);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -63,6 +69,9 @@ export default function Sidebar() {
           <button
             type="button"
             className="limit-toggle-button"
+            aria-haspopup="dialog"
+            aria-expanded={showLimitPopover}
+            aria-controls="daily-limit-settings"
             onClick={() => setShowLimitPopover((prev) => !prev)}
           >
             <span className="limit-toggle-icon">

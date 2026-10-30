@@ -206,11 +206,17 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
   return (
     <>
       {isOpen && (
-        <div className="daily-limit-popover">
+        <div
+          id="daily-limit-settings"
+          className="daily-limit-popover"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="daily-limit-title"
+        >
           <div className="popover-header">
             <div className="popover-title">
               <Settings size={18} />
-              <span>Límite diario</span>
+              <span id="daily-limit-title">Límite diario</span>
             </div>
             <button
               type="button"
@@ -224,7 +230,9 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
 
           <form onSubmit={handleSave} className="popover-body" noValidate>
             <div className="input-wrapper">
+              <label htmlFor="daily-limit-hours">Horas máximas por día</label>
               <input
+                id="daily-limit-hours"
                 type="text"
                 inputMode="numeric"
                 value={limit}
@@ -253,7 +261,7 @@ export default function DailyLimitPopover({ isOpen, onClose }) {
             ) : (
               <div className="popover-status info">
                 <Info size={16} />
-                <span>Nº de horas por dia</span>
+                <span>Elige entre 1 y 16 horas.</span>
               </div>
             )}
 
