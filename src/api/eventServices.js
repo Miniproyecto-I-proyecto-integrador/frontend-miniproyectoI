@@ -109,10 +109,10 @@ export const eventServices = {
       body: JSON.stringify(data),
     }),
 
-  rescheduleSubtask: (id, dueDate) =>
+  rescheduleSubtask: (id, scheduledDate) =>
     request(`/api/subtareas/${id}/`, {
       method: "PATCH",
-      body: JSON.stringify({ due_date: dueDate }),
+      body: JSON.stringify({ scheduled_date: scheduledDate }),
     }),
 
   suggestSubtaskDay: (id, today) => {
@@ -120,11 +120,11 @@ export const eventServices = {
     return request(`/api/subtareas/${id}/sugerir-dia/?${query}`);
   },
 
-  moveSubtask: (id, dueDate, today) => {
+  moveSubtask: (id, scheduledDate, today) => {
     const query = new URLSearchParams({ today });
     return request(`/api/subtareas/${id}/resolver-mover/?${query}`, {
       method: "PATCH",
-      body: JSON.stringify({ due_date: dueDate }),
+      body: JSON.stringify({ scheduled_date: scheduledDate }),
     });
   },
 
@@ -137,12 +137,13 @@ export const eventServices = {
   },
 
   // US-09: PATCH /api/subtareas/{id}/registrar-ejecucion/
-  registerExecution: (id, { status, note, due_date } = {}) => {
+  registerExecution: (id, { status, note, due_date, scheduled_date } = {}) => {
     const payload = { status };
     if (status === "postponed") {
       payload.note = (note ?? "").trim();
-      if (due_date) {
-        payload.due_date = due_date;
+      const date = scheduled_date || due_date;
+      if (date) {
+        payload.scheduled_date = date;
       }
     } else if (note !== undefined && note !== "") {
       payload.note = note.trim();

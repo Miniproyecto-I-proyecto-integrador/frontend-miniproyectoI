@@ -50,11 +50,12 @@ export function RescheduleModal({
   const today = getToday();
 
   const defaultDate = useMemo(() => {
-    const candidate = initialDate || task.due_date || "";
+    const candidate =
+      initialDate || task.scheduled_date || task.due_date || "";
     if (candidate && candidate >= today) return candidate;
     if (task.eventDate && task.eventDate < today) return task.eventDate;
     return today;
-  }, [initialDate, task.due_date, task.eventDate, today]);
+  }, [initialDate, task.scheduled_date, task.due_date, task.eventDate, today]);
 
   const [selectedDate, setSelectedDate] = useState(defaultDate);
   const [note, setNote] = useState(

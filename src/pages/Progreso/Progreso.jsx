@@ -183,8 +183,8 @@ export default function Progreso() {
       subtasks.forEach((task) => {
         if (
           task.status !== "done" &&
-          task.due_date &&
-          task.due_date < today
+          (task.scheduled_date || task.due_date) &&
+          (task.scheduled_date || task.due_date) < today
         ) {
           overdueSubtasks += 1;
         }
@@ -447,4 +447,3 @@ export default function Progreso() {
     </div>
   );
 }
-
