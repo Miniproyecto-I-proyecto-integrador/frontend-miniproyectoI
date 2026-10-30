@@ -308,7 +308,11 @@ export function OverloadConflictModal({
           {onReduceHours &&
             (!availableOptions.length ||
               availableOptions.includes("reduce_hours")) && (
-              <button type="button" className="btn-primary" onClick={onReduceHours}>
+              <button
+                type="button"
+                className="btn-primary overload-reduce-button"
+                onClick={onReduceHours}
+              >
                 Reducir horas
               </button>
             )}

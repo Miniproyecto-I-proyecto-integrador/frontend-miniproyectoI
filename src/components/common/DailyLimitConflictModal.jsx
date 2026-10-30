@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  AlertTriangle,
   CalendarDays,
   CircleAlert,
   CircleCheck,
-  Clock3,
-  Info,
   Minus,
   Plus,
 } from "lucide-react";
@@ -203,21 +200,6 @@ export default function DailyLimitConflictModal({
     return { current, total: current + hours };
   };
 
-  const getMinimumHours = (task) => {
-    const action = actions[task.id];
-    const existing = Number(task.estimated_hours);
-    const onOrigin = action?.type === "move"
-      ? 0
-      : action?.type === "reduce_hours"
-        ? Number(action.estimated_hours)
-        : existing;
-    const others = Math.max(
-      0,
-      (projectedLoads.get(task.conflictDate) || 0) - onOrigin,
-    );
-    return Math.min(existing, Math.max(0.5, Number(limit) - others));
-  };
-
   const changes = tasks.flatMap((task) => {
     const action = actions[task.id];
     if (action?.type === "move" && action.due_date) {
@@ -265,7 +247,7 @@ export default function DailyLimitConflictModal({
           <p id="daily-limit-resolution-description">
             {resolved
               ? <>Con estos cambios tu plan queda dentro del nuevo límite de <strong>{formatHours(limit)} h por día.</strong></>
-              : <>Vas a cambiar tu límite de <strong>{formatHours(previousLimit)} h</strong> a <strong>{formatHours(limit)} h por día.</strong> No se guardará hasta que resuelvas el exceso o canceles el cambio.</>}
+              : <>El límite baja de <strong>{formatHours(previousLimit)} h</strong> a <strong>{formatHours(limit)} h por día.</strong> Mueve o reduce gestiones hasta eliminar el exceso para guardar.</>}
           </p>
         </div>
 
@@ -294,15 +276,12 @@ export default function DailyLimitConflictModal({
                 </div>
 
                 <p className="daily-limit-resolution-day-summary">
-                  Plan: <strong>{formatHours(projected)}h</strong>
-                  {" · "}Límite: <strong>{formatHours(limit)}h</strong>
+                  <strong>{formatHours(projected)}h planificadas</strong>
+                  {" · "}Límite {formatHours(limit)}h
                 </p>
 
                 <div className="daily-limit-resolution-tasks-heading">
                   <strong>Gestiones del día</strong>
-                  <span>
-                    Mueve o reduce al menos una para respetar el límite.
-                  </span>
                 </div>
 
                 <div className="daily-limit-resolution-task-list">
@@ -314,7 +293,6 @@ export default function DailyLimitConflictModal({
                     const currentHours = Number(
                       action.estimated_hours ?? task.estimated_hours,
                     );
-                    const minimumHours = getMinimumHours(task);
                     const suggestedDates = task.suggested_dates || [];
                     const selectedDestination =
                       action.type === "move" ? action.due_date : null;
@@ -331,46 +309,29 @@ export default function DailyLimitConflictModal({
                               {task.activity_name} · {formatHours(estimated)}h
                             </span>
                           </div>
-                          <div
-                            className="daily-limit-resolution-radio-group"
-                            role="radiogroup"
-                            aria-label={`Qué hacer con ${task.name}`}
+                          <select
+                            className="daily-limit-resolution-action-select"
+                            aria-label={`Acción para ${task.name}`}
+                            value={action.type}
+                            disabled={saving}
+                            onChange={(event) =>
+                              setTaskAction(task, event.target.value)
+                            }
                           >
-                            {[
-                              ["keep", "Mantener"],
-                              ["move", "Mover a otro día"],
-                              ["reduce_hours", "Reducir horas"],
-                            ].map(([type, label]) => (
-                              <label
-                                className={`daily-limit-resolution-choice ${action.type === type ? "is-selected" : ""}`}
-                                key={type}
-                              >
-                                <input
-                                  type="radio"
-                                  name={`resolution-${task.id}`}
-                                  value={type}
-                                  checked={action.type === type}
-                                  disabled={
-                                    saving ||
-                                    (type === "reduce_hours" &&
-                                      maxReducibleHours <= 0.5)
-                                  }
-                                  onChange={() => setTaskAction(task, type)}
-                                />
-                                {type === "move" ? (
-                                  <CalendarDays size={15} aria-hidden="true" />
-                                ) : type === "reduce_hours" ? (
-                                  <Clock3 size={15} aria-hidden="true" />
-                                ) : null}
-                                <span>{label}</span>
-                              </label>
-                            ))}
-                          </div>
+                            <option value="keep">Mantener</option>
+                            <option value="move">Mover a otro día</option>
+                            <option
+                              value="reduce_hours"
+                              disabled={maxReducibleHours <= 0.5}
+                            >
+                              Reducir horas
+                            </option>
+                          </select>
                         </div>
 
                         {action.type === "move" && (
                           <div className="daily-limit-resolution-action-panel">
-                            <strong>Fechas con espacio disponible para {formatHours(estimated)}h</strong>
+                            <strong>Fechas disponibles</strong>
                             {suggestedDates.length ? (
                               <div className="daily-limit-resolution-suggestions">
                                 {suggestedDates.map((candidate, index) => {
@@ -426,7 +387,7 @@ export default function DailyLimitConflictModal({
 
                         {action.type === "reduce_hours" && (
                           <div className="daily-limit-resolution-action-panel">
-                            <strong>Horas estimadas para {task.name}</strong>
+                            <strong>Ajustar horas estimadas</strong>
                             <div className="daily-limit-resolution-reducer">
                               <button
                                 type="button"
@@ -468,13 +429,8 @@ export default function DailyLimitConflictModal({
                               </span>
                             </div>
                             <p className="daily-limit-resolution-minimum">
-                              <Info size={14} />
-                              Mínimo para resolver el conflicto: {formatHours(minimumHours)}h · Puedes bajar hasta 0.5h
+                              Puedes reducir en pasos de 0.5h.
                             </p>
-                            <div className="daily-limit-resolution-warning" role="note">
-                              <AlertTriangle size={15} />
-                              Las horas estimadas de {task.name} cambiarán de {formatHours(estimated)}h a {formatHours(currentHours)}h en /hoy y en el detalle del evento.
-                            </div>
                           </div>
                         )}
                       </article>
@@ -545,7 +501,7 @@ export default function DailyLimitConflictModal({
             </button>
             {!resolved && (
               <span className="daily-limit-resolution-remaining">
-                Aún faltan {formatHours(remainingExcess)}h por resolver
+                Faltan {formatHours(remainingExcess)}h
               </span>
             )}
             <button
