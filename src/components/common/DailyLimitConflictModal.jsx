@@ -273,13 +273,6 @@ export default function DailyLimitConflictModal({
           {overloadedDays.map((day) => {
             const projected = projectedLoads.get(day.date) || 0;
             const excess = Math.max(0, projected - Number(limit));
-            const scale = Math.max(Number(limit), projected, 1);
-            const baseWidth = Math.min(
-              100,
-              (Math.min(projected, Number(limit)) / scale) * 100,
-            );
-            const excessWidth = Math.min(100, (excess / scale) * 100);
-            const limitPosition = Math.min(100, (Number(limit) / scale) * 100);
 
             return (
               <section className="daily-limit-resolution-day" key={day.date}>
@@ -300,47 +293,16 @@ export default function DailyLimitConflictModal({
                   </span>
                 </div>
 
-                <h3>
-                  Quedarías con {formatHours(projected)}h planificadas (límite{" "}
-                  {formatHours(limit)}h)
-                </h3>
-                <div
-                  className={`daily-limit-resolution-meter ${excess ? "is-over" : "is-within"}`}
-                  role="img"
-                  aria-label={`Quedarías con ${formatHours(projected)} horas, límite ${formatHours(limit)} horas`}
-                >
-                  <div
-                    className={`daily-limit-resolution-meter-fill ${excess ? "is-base" : "is-within"}`}
-                    style={{ width: `${baseWidth}%` }}
-                  />
-                  {excess > 0 && (
-                    <div
-                      className="daily-limit-resolution-meter-fill is-excess"
-                      style={{
-                        left: `${limitPosition}%`,
-                        width: `${excessWidth}%`,
-                      }}
-                    />
-                  )}
-                  <span
-                    className="daily-limit-resolution-meter-limit"
-                    style={{ left: `${limitPosition}%` }}
-                  />
-                  <span
-                    className="daily-limit-resolution-meter-limit-label"
-                    style={{ left: `${limitPosition}%` }}
-                  >
-                    Límite {formatHours(limit)}h
-                  </span>
-                </div>
-                <div className="daily-limit-resolution-meter-labels">
-                  <span>0h</span>
-                  <span>{formatHours(projected)}h planificadas</span>
-                </div>
+                <p className="daily-limit-resolution-day-summary">
+                  Plan: <strong>{formatHours(projected)}h</strong>
+                  {" · "}Límite: <strong>{formatHours(limit)}h</strong>
+                </p>
 
                 <div className="daily-limit-resolution-tasks-heading">
-                  <strong>Gestiones de ese día</strong>
-                  <span>Elige qué hacer con al menos una para quedar dentro del límite.</span>
+                  <strong>Gestiones del día</strong>
+                  <span>
+                    Mueve o reduce al menos una para respetar el límite.
+                  </span>
                 </div>
 
                 <div className="daily-limit-resolution-task-list">
