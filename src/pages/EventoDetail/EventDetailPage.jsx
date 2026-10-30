@@ -326,15 +326,28 @@ export default function EventDetailPage() {
         />
       </div>
     );
+  const subtasks = Array.isArray(event.subtasks) ? event.subtasks : [];
+  const totalSubtasks = Math.max(
+    0,
+    Number(event.total_subtasks ?? subtasks.length) || 0,
+  );
+  const completedSubtasks = Math.min(
+    totalSubtasks,
+    Math.max(
+      0,
+      Number(
+        event.completed_subtasks ??
+          subtasks.filter((task) => task.status === "done").length,
+      ) || 0,
+    ),
+  );
   const progress =
-    event.progress ??
-    (event.subtasks?.length
-      ? Math.round(
-          (event.subtasks.filter((task) => task.status === "done").length /
-            event.subtasks.length) *
-            100,
-        )
-      : 0);
+    totalSubtasks === 0
+      ? 0
+      : Number(
+          event.progress ??
+            Math.round((completedSubtasks / totalSubtasks) * 100),
+        ) || 0;
 
   const facts = [
     ["Lugar", event.location],
@@ -390,8 +403,8 @@ export default function EventDetailPage() {
           value={progress}
           large
           showCount={true}
-          completed={0}
-          total={0}
+          completed={completedSubtasks}
+          total={totalSubtasks}
         />
       </section>
       <section className="subtasks-section">
