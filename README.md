@@ -1,16 +1,65 @@
-# React + Vite
+# Logística — Planificador de eventos (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web SPA para la planificación de eventos, control de subtareas diarias y seguimiento de progreso operativo. Permite gestionar límites diarios de horas, detectar sobrecargas de agenda y resolver conflictos mediante reprogramación o ajuste de tiempos.
 
-Currently, two official plugins are available:
+- **App publicada (Vercel):** [https://frontend-miniproyecto-i.vercel.app/](https://frontend-miniproyecto-i.vercel.app/)
+- **API publicada (Render):** [https://backend-miniproyectoi.onrender.com/admin/](https://backend-miniproyectoi.onrender.com/admin/)
+- **Repositorio Frontend:** [https://github.com/Miniproyecto-I-proyecto-integrador/frontend-miniproyectoI](https://github.com/Miniproyecto-I-proyecto-integrador/frontend-miniproyectoI)
+- **Repositorio Backend:** [https://github.com/Miniproyecto-I-proyecto-integrador/backend-miniproyectoI](https://github.com/Miniproyecto-I-proyecto-integrador/backend-miniproyectoI)
+- **Organización GitHub:** [https://github.com/Miniproyecto-I-proyecto-integrador](https://github.com/Miniproyecto-I-proyecto-integrador)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Cuenta de prueba
+- **Correo:** `isabela@correoqueseainventado.com`
+- **Contraseña:** `gummyesmeralda`
 
-## React Compiler
+## Tecnologías
+- **React 19.2.8** y **React DOM 19.2.8**
+- **React Router DOM 7.18.4**
+- **Vite 8.3.0**
+- **Lucide React 1.47.0**
+- **ESLint 10.10.0**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Estructura
+```text
+frontend-miniproyectoI/
+├── public/            # Recursos públicos estáticos
+├── src/
+│   ├── api/           # Servicios de conexión con la API (auth y eventos)
+│   ├── assets/        # Imágenes e íconos locales
+│   ├── components/    # Componentes reutilizables (common, events, hoy)
+│   ├── context/       # Estado global de autenticación (AuthContext)
+│   ├── pages/         # Vistas principales (Hoy, Eventos, EventoDetail, Crear, Login, Registro)
+│   ├── utils/         # Funciones auxiliares de fechas y agenda
+│   ├── App.jsx        # Configuración de rutas y layout principal
+│   └── main.jsx       # Punto de entrada de la aplicación
+├── config.js          # Configuración global y URL base de la API
+├── package.json
+└── vite.config.js
+```
 
-## Expanding the ESLint configuration
+## Características principales
+- **Autenticación JWT:** Inicio de sesión, registro y renovación automática de sesión (`refresh_token`).
+- **Vista operativa diaria (`/hoy`):** Control de subtareas del día, filtros de estado y resumen de capacidad horaria utilizada.
+- **Gestión de eventos y subtareas (`/eventos`, `/crear`, `/evento/:id`):** Creación, edición, eliminación y registro de ejecución (completada o pospuesta con notas).
+- **Seguimiento de progreso (`/progreso`):** Visualización del porcentaje de avance por cada evento según sus subtareas completadas.
+- **Control de límite diario y sobrecargas:** Configuración del tope de horas diarias (1 a 16 h), detección de conflictos y resolución asistida (reprogramar fecha o reducir horas).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Cómo correrlo en local
+```bash
+git clone https://github.com/Miniproyecto-I-proyecto-integrador/frontend-miniproyectoI.git
+cd frontend-miniproyectoI
+npm install
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:5173`. Por defecto se conecta a la API en Render; para usar un backend local, crea un archivo `.env` con `VITE_API_URL=http://localhost:8000`.
+
+## Equipo
+- Juan Marin Orozco ([@JuanmoCode](https://github.com/JuanmoCode))
+- Juan Diego Ledezma Muñoz ([@Ju4nD1ego](https://github.com/Ju4nD1ego))
+- Brandon Alexis Franco Flor ([@BrandoliOrname](https://github.com/BrandoliOrname))
+- Isabela Bermudez Moreno ([@isabelabermudez](https://github.com/isabelabermudez))
+
+---
+**Proyecto Integrador - MiniProyecto 1**  
+Profesor: Fabián Stiven Valencia Córdoba
