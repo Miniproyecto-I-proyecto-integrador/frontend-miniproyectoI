@@ -11,7 +11,8 @@ export default function FilterBar({
   const hasFilters = eventFilter !== "all" || statusFilter !== "all";
 
   return (
-    <div className="filter-bar">
+    <div className="filter-bar" role="group" aria-label="Filtros de gestiones">
+      <span className="filter-bar-label">Filtros</span>
       <div className="filter-select">
         <select
           value={eventFilter}
