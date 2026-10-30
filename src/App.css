@@ -142,6 +142,14 @@ body {
   outline: none;
 }
 
+.input-wrapper label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .popover-status {
   display: flex;
   align-items: center;
@@ -997,9 +1005,25 @@ body {
   border-radius: 10px;
   background: #fff;
   color: var(--ink);
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 2px 5px #0000000d;
+}
+.daily-load-trigger {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.daily-load-trigger:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+.daily-load-trigger:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
 }
 .task-summary {
   display: flex;

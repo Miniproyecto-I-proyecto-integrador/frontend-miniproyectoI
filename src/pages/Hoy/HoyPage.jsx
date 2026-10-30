@@ -324,17 +324,21 @@ export default function HoyPage() {
         <p>Organiza las gestiones importantes de tus eventos.</p>
       </div>
       {showLoad && (
-        <span
-          className={`daily-load ${dailyLimit !== null && todayHours > dailyLimit ? "over" : ""}`}
+        <button
+          type="button"
+          className={`daily-load daily-load-trigger ${dailyLimit !== null && todayHours > dailyLimit ? "over" : ""}`}
+          aria-haspopup="dialog"
+          aria-label={`Abrir configuración del límite diario. Carga de hoy: ${Number(todayHours.toFixed(1))} horas de ${dailyLimit === null ? "límite no disponible" : `${dailyLimit} horas`}`}
           title={
             dailyLimitError
               ? "No pudimos consultar el límite diario"
-              : undefined
+              : "Abrir configuración del límite diario"
           }
+          onClick={() => window.dispatchEvent(new Event("open-daily-limit"))}
         >
           Carga de hoy: {Number(todayHours.toFixed(1))}h /{" "}
           {dailyLimit === null ? "—" : `${dailyLimit}h`}
-        </span>
+        </button>
       )}
     </header>
   );
