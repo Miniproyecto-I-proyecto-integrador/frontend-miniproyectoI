@@ -519,10 +519,16 @@ body {
 }
 .filter-bar {
   display: flex;
+  align-items: center;
   gap: 14px;
   margin-bottom: 16px;
   position: relative;
   z-index: 1;
+}
+.filter-bar-label {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
 }
 .filter-select {
   position: relative;
@@ -535,13 +541,25 @@ body {
   background: #fff;
   padding: 10px 40px 10px 15px;
   color: var(--ink);
+  font-family: inherit;
   font-size: 14px;
+  line-height: 1.4;
   box-shadow: 0 2px 5px #00000010;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  cursor: pointer;
   position: relative;
   z-index: 1;
+}
+
+.filter-bar select:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.filter-bar option {
+  font: inherit;
 }
 
 .filter-icon {
