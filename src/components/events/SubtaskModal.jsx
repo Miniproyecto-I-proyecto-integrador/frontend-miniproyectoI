@@ -2,12 +2,13 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import FormError from "../common/FormError";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { getToday } from "../../utils/hoy";
 
 const empty = {
   name: "",
   category: "",
   due_date: "",
-  scheduled_date: "",
+  scheduled_date: getToday(),
   estimated_hours: "",
   contact: "",
   description: "",
@@ -22,8 +23,12 @@ export default function SubtaskModal({
 }) {
   const [form, setForm] = useState(
     task
-      ? { ...empty, ...task }
-      : { ...empty, due_date: eventDate, scheduled_date: eventDate },
+      ? {
+          ...empty,
+          ...task,
+          scheduled_date: task.scheduled_date || task.due_date || getToday(),
+        }
+      : { ...empty, due_date: eventDate || "", scheduled_date: getToday() },
   );
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
@@ -34,10 +39,15 @@ export default function SubtaskModal({
     event.preventDefault();
     const next = {};
     if (!form.name.trim()) next.name = "Este campo es obligatorio";
-    if (!form.due_date) next.due_date = "Este campo es obligatorio";
-    if (form.due_date && eventDate && form.due_date > eventDate)
-      next.due_date =
-        "El plazo de la subtarea no puede ser posterior a la fecha del evento";
+    if (!form.scheduled_date)
+      next.scheduled_date = "Este campo es obligatorio";
+    if (
+      form.scheduled_date &&
+      eventDate &&
+      form.scheduled_date > eventDate
+    )
+      next.scheduled_date =
+        "La fecha programada no puede ser posterior a la fecha del evento";
     if (!form.estimated_hours || Number(form.estimated_hours) <= 0)
       next.estimated_hours = "Las horas estimadas deben ser mayores a cero";
     if (Object.keys(next).length) {
@@ -50,6 +60,7 @@ export default function SubtaskModal({
     try {
       await onSubmit({
         ...form,
+        due_date: eventDate || form.due_date,
         activity: activityId,
         estimated_hours: Number(form.estimated_hours),
       });
@@ -73,6 +84,10 @@ export default function SubtaskModal({
         type={type}
         value={form[name] || ""}
         placeholder={placeholder}
+        max={name === "scheduled_date" ? eventDate || undefined : undefined}
+        onWheel={
+          type === "number" ? (event) => event.currentTarget.blur() : undefined
+        }
         disabled={loading}
         onChange={(event) => update(name, event.target.value)}
       />
@@ -100,15 +115,14 @@ export default function SubtaskModal({
             {field("Categoría", "category", "text", "ej:")}
           </div>
           <div className="form-block">
-            <h3>¿Cuándo debe estar lista y cuánto tiempo te tomará?</h3>
-            {field("Plazo límite*", "due_date", "date")}
+            <h3>¿Cuándo la harás y cuánto tiempo te tomará?</h3>
+            {field("Fecha programada*", "scheduled_date", "date")}
             {field(
               "Horas estimadas*",
               "estimated_hours",
               "number",
               "1.5 horas",
             )}
-            {field("Fecha programada", "scheduled_date", "date")}
           </div>
           <div className="form-block">
             <h3>¿Tiene proveedor?</h3>

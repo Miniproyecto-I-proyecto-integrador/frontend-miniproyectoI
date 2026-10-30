@@ -13,9 +13,10 @@ export const getToday = (now = new Date()) => {
 // Grupo de una subtarea. Las completadas nunca cuentan como vencidas, van aparte.
 export const getGroup = (task, today) => {
   if (task.status === "done") return "completadas";
-  if (!task.due_date) return "proximas"; // sin fecha: no es urgente
-  if (task.due_date < today) return "vencidas";
-  if (task.due_date === today) return "hoy";
+  const scheduledDate = task.scheduled_date || task.due_date;
+  if (!scheduledDate) return "proximas"; // sin fecha: no es urgente
+  if (scheduledDate < today) return "vencidas";
+  if (scheduledDate === today) return "hoy";
   return "proximas";
 };
 
@@ -35,7 +36,9 @@ const hours = (task) => Number(task.estimated_hours) || 0;
 
 // Regla de orden: fecha más cercana/antigua primero → empate: menor esfuerzo → id (estable)
 const byPriority = (a, b) =>
-  (a.due_date || NO_DATE).localeCompare(b.due_date || NO_DATE) ||
+  (a.scheduled_date || a.due_date || NO_DATE).localeCompare(
+    b.scheduled_date || b.due_date || NO_DATE,
+  ) ||
   hours(a) - hours(b) ||
   String(a.id).localeCompare(String(b.id));
 
@@ -59,8 +62,8 @@ export const toSubtaskPayload = (task, changes = {}) => ({
   category: task.category,
   contact: task.contact,
   description: task.description,
-  due_date: task.due_date,
-  scheduled_date: task.scheduled_date,
+  due_date: task.eventDate || task.due_date,
+  scheduled_date: task.scheduled_date || task.due_date,
   estimated_hours: Number(task.estimated_hours),
   status: task.status,
   activity: task.eventId,

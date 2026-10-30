@@ -28,13 +28,14 @@ const formatShortDate = (dateString) => {
 };
 
 const getDueDateLabel = (task, group, done) => {
+  const date = task.scheduled_date || task.due_date;
   if (done) {
-    return task.due_date ? `Hecha · ${formatShortDate(task.due_date)}` : "Hecha";
+    return date ? `Hecha · ${formatShortDate(date)}` : "Hecha";
   }
-  if (!task.due_date) return "Sin fecha";
-  if (group === "vencidas") return `Venció el ${formatShortDate(task.due_date)}`;
+  if (!date) return "Sin fecha";
+  if (group === "vencidas") return `Venció el ${formatShortDate(date)}`;
   if (group === "hoy") return "Para hoy";
-  return `Para el ${formatShortDate(task.due_date)}`;
+  return `Para el ${formatShortDate(date)}`;
 };
 
 export default function TodayTaskCard({

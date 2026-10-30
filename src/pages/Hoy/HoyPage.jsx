@@ -235,7 +235,7 @@ export default function HoyPage() {
       await eventServices.registerExecution(task.id, {
         status: "postponed",
         note,
-        due_date: targetDate,
+        scheduled_date: targetDate,
       });
 
       setSuccess({
@@ -297,7 +297,7 @@ export default function HoyPage() {
       await eventServices.registerExecution(task.id, {
         status: "postponed",
         note,
-        due_date: targetDate,
+        scheduled_date: targetDate,
       });
       setSuccess({
         title: "Gestión pospuesta",

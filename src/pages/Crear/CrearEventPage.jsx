@@ -37,10 +37,10 @@ export default function CrearEventPage() {
     if (!form.date_event) next.date_event = "Este campo es obligatorio";
     if (
       form.date_event &&
-      subtasks.some((task) => task.due_date > form.date_event)
+      subtasks.some((task) => task.scheduled_date > form.date_event)
     ) {
       next.subtasks =
-        "El plazo de una subtarea no puede ser posterior a la fecha del evento";
+        "La fecha programada de una subtarea no puede ser posterior a la fecha del evento";
     }
     return next;
   };
@@ -56,7 +56,11 @@ export default function CrearEventPage() {
       const event = await eventServices.createEvent(form);
       const results = await Promise.allSettled(
         subtasks.map((task) => {
-          const payload = { ...task, activity: event.id };
+          const payload = {
+            ...task,
+            activity: event.id,
+            due_date: event.date_event,
+          };
           delete payload.tid; // id temporal solo del frontend
           return eventServices.createSubtask(payload);
         }),
@@ -79,7 +83,7 @@ export default function CrearEventPage() {
 
   // Verifica la carga antes de guardar la subtarea como borrador del evento.
   const saveSubtask = async (payload) => {
-    const capacity = await eventServices.getCapacity(payload.due_date);
+    const capacity = await eventServices.getCapacity(payload.scheduled_date);
     const assignedHours = Number(capacity?.assigned_hours);
     const limitHours = Number(capacity?.limit_hours);
     if (!Number.isFinite(assignedHours) || !Number.isFinite(limitHours)) {
@@ -89,7 +93,11 @@ export default function CrearEventPage() {
     const otherDraftHours = subtasks.reduce((total, task) => {
       const isBeingEdited = task.tid === subtaskModal?.task?.tid;
       const isActive = task.status === "pending" || task.status === "in_progress";
-      return !isBeingEdited && isActive && task.due_date === payload.due_date
+      return (
+        !isBeingEdited &&
+        isActive &&
+        task.scheduled_date === payload.scheduled_date
+      )
         ? total + Number(task.estimated_hours || 0)
         : total;
     }, 0);
@@ -105,7 +113,7 @@ export default function CrearEventPage() {
       error.fields = {
         conflicto: [message],
         conflict: {
-          date: payload.due_date,
+          date: payload.scheduled_date,
           current_hours: currentHours,
           proposed_hours: proposedHours,
           total_hours: totalHours,

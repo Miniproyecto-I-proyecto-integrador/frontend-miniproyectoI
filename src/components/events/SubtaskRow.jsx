@@ -45,7 +45,8 @@ export default function SubtaskRow({
       <div className="subtask-body">
         <div className="subtask-details">
           <span>
-            <Calendar size={15} /> Plazo límite: <b>{task.due_date}</b>
+            <Calendar size={15} /> Fecha programada:{" "}
+            <b>{task.scheduled_date || task.due_date}</b>
           </span>
           <span>
             <Clock size={15} /> Horas estimadas: <b>{task.estimated_hours}h</b>

@@ -153,7 +153,7 @@ export default function EventDetailPage() {
       if (actionError?.fields?.conflict) {
         showOverload(
           taskWithEvent(task),
-          task.due_date,
+          task.scheduled_date,
           actionError.fields.conflict,
           "",
           task.status === "done" ? "undo" : undefined,
@@ -178,7 +178,7 @@ export default function EventDetailPage() {
       await eventServices.registerExecution(task.id, {
         status: "postponed",
         note,
-        due_date: targetDate,
+        scheduled_date: targetDate,
       });
       await load(true);
       notifyTasksUpdated();
@@ -244,7 +244,7 @@ export default function EventDetailPage() {
       await eventServices.registerExecution(task.id, {
         status: "postponed",
         note,
-        due_date: targetDate,
+        scheduled_date: targetDate,
       });
       await load(true);
       notifyTasksUpdated();
@@ -281,7 +281,7 @@ export default function EventDetailPage() {
       await eventServices.registerExecution(task.id, {
         status: "postponed",
         note,
-        due_date: targetDate,
+        scheduled_date: targetDate,
       });
       await load(true);
       notifyTasksUpdated();
